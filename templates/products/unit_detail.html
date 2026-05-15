@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Fiche Unité IMEI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <a href="{% url 'products:detail' unit.product.pk %}" class="btn-view" style="padding:10px;"><i class="fas fa-arrow-left"></i></a>
+        <div>
+            <h2 style="font-family:'Outfit';">Unité {{ unit.imei_serial }}</h2>
+            <p style="color:var(--text-muted);">{{ unit.product.brand|upper }} {{ unit.product.name }}</p>
+        </div>
+    </div>
+    <div class="flex gap-2">
+        {% if unit.status == 'in_stock' %}
+        <span class="badge-new" style="position:static; background:#DEF7EC; color:#03543F; padding:10px 20px; font-size:0.9rem;">
+            <i class="fas fa-check-circle"></i> DISPONIBLE EN STOCK
+        </span>
+        {% else %}
+        <span class="badge-alert" style="position:static; padding:10px 20px; font-size:0.9rem;">
+            <i class="fas fa-shopping-bag"></i> DÉJÀ VENDU
+        </span>
+        {% endif %}
+        {% if request.user.is_admin_user %}
+        <a href="{% url 'products:unit_edit' unit.pk %}" class="btn-view"><i class="fas fa-edit"></i> Modifier</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Main Specs Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Caractéristiques Techniques</h2>
+            <i class="fas fa-microchip" style="color:var(--primary); font-size:1.5rem;"></i>
+        </div>
+        <div class="card-body">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                <div class="info-block">
+                    <label class="form-label">IMEI / N° de Série</label>
+                    <p style="font-size:1.2rem; font-weight:800; font-family:monospace; color:var(--primary);">{{ unit.imei_serial }}</p>
+                </div>
+                <div class="info-block">
+                    <label class="form-label">État Cosmétique</label>
+                    <p style="font-weight:700;">{{ unit.get_condition_display }}</p>
+                </div>
+                <div class="info-block">
+                    <label class="form-label">Couleur</label>
+                    <p>{{ unit.color|default:"Non spécifiée" }}</p>
+                </div>
+                <div class="info-block">
+                    <label class="form-label">Capacité / Stockage</label>
+                    <p>{{ unit.storage|default:"Non spécifiée" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial & Warranty Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Finance & Garantie</h2>
+            <i class="fas fa-shield-halved" style="color:#10B981; font-size:1.5rem;"></i>
+        </div>
+        <div class="card-body">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+                {% if request.user.is_admin_user %}
+                <div class="info-block">
+                    <label class="form-label">Prix d'Achat (Coût)</label>
+                    <p style="font-weight:700; color:#64748B;">{{ unit.effective_purchase_price|intcomma }} F</p>
+                </div>
+                {% endif %}
+                <div class="info-block">
+                    <label class="form-label">Prix de Vente Actuel</label>
+                    <p style="font-size:1.2rem; font-weight:800; color:var(--primary);">{{ unit.effective_selling_price|intcomma }} F</p>
+                </div>
+                <div class="info-block">
+                    <label class="form-label">Durée de Garantie</label>
+                    <p>{{ unit.warranty_months }} mois</p>
+                </div>
+                <div class="info-block">
+                    <label class="form-label">Fin de Garantie</label>
+                    <p>
+                        {% if unit.warranty_end %}
+                            {{ unit.warranty_end|date:"d F Y" }}
+                        {% else %}
+                            <span style="color:var(--text-muted); font-style:italic;">Calculé à la vente</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if unit.notes %}
+<div class="card mt-4">
+    <div class="card-header"><h2>Notes & Observations</h2></div>
+    <div class="card-body">
+        <p style="white-space:pre-wrap;">{{ unit.notes }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Movement History -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h2>Historique des Mouvements</h2>
+        <span class="badge-new" style="position:static;">LOGS DE STOCK</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Raison / Description</th>
+                    <th>Par</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for move in unit.movements.all %}
+                <tr>
+                    <td>{{ move.timestamp|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if move.movement_type == 'in' %}<span style="color:#10B981;">Entrée</span>
+                        {% elif move.movement_type == 'out' %}<span style="color:var(--primary);">Sortie</span>
+                        {% else %}<span style="color:#3B82F6;">Retour</span>{% endif %}
+                    </td>
+                    <td>{{ move.reason }}</td>
+                    <td>{{ move.performed_by.username }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center" style="padding:40px;">Aucun mouvement enregistré.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .info-block label { 
+        display: block; font-size: 0.75rem; color: #94A3B8; 
+        text-transform: uppercase; letter-spacing: 1px; font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .info-block p { font-size: 1rem; color: var(--text-main); margin: 0; }
+</style>
+{% endblock %}

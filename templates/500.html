@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}Erreur Système{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:100px 20px; text-align:center;">
+    <div style="font-size:8rem; font-weight:900; color:#EF4444; opacity:0.1; line-height:1;">500</div>
+    <div style="margin-top:-60px;">
+        <i class="fas fa-shield-virus" style="font-size:4rem; color:#EF4444; margin-bottom:20px; display:block;"></i>
+        <h2 style="font-size:2rem; font-weight:800; color:var(--text-main);">Erreur Inattendue</h2>
+        <p style="color:var(--text-muted); max-width:500px; margin: 20px auto;">Le serveur a rencontré un problème technique. Nos administrateurs ont été prévenus. Veuillez réessayer dans quelques instants.</p>
+        <a href="javascript:location.reload();" class="btn-view" style="margin-top:30px; display:inline-flex;">
+            <i class="fas fa-sync" style="margin-right:10px;"></i> Recharger la page
+        </a>
+    </div>
+</div>
+{% endblock %}

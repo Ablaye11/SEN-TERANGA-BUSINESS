@@ -1,0 +1,163 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ sale.invoice_number }} - SEN TERANGA BUSINESS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #C52F33; --text-main: #1E293B; --text-muted: #64748B; --border: #E2E8F0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--text-main); line-height: 1.5; background: #f1f5f9; padding: 40px 0; }
+        
+        .invoice-box {
+            max-width: 850px; margin: 0 auto; background: white; padding: 50px;
+            border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            position: relative; overflow: hidden;
+        }
+
+        /* Paid Watermark */
+        {% if sale.status == 'completed' %}
+        .invoice-box::before {
+            content: "PAYÉE"; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 150px; font-weight: 900; color: rgba(16, 185, 129, 0.08);
+            z-index: 0; pointer-events: none;
+        }
+        {% endif %}
+
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px; position: relative; z-index: 1; }
+        
+        .brand-section h1 { font-family: 'Outfit'; font-weight: 800; font-size: 2rem; color: var(--primary); letter-spacing: -1px; margin-bottom: 5px; }
+        .brand-section p { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+
+        .meta-section { text-align: right; }
+        .meta-section h2 { font-family: 'Outfit'; font-size: 2.5rem; font-weight: 800; color: #E2E8F0; line-height: 1; margin-bottom: 10px; }
+        .meta-section p { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+        .meta-section span { font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; position: relative; z-index: 1; }
+        .info-card h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .info-card p { font-size: 0.95rem; font-weight: 600; }
+
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; position: relative; z-index: 1; }
+        .invoice-table th { background: #F8FAFC; padding: 15px; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; border-bottom: 2px solid var(--border); }
+        .invoice-table td { padding: 20px 15px; border-bottom: 1px solid #F1F5F9; font-size: 0.9rem; }
+        
+        .item-name { font-weight: 800; color: var(--text-main); display: block; margin-bottom: 4px; }
+        .item-meta { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+        .summary-section { display: flex; justify-content: flex-end; position: relative; z-index: 1; }
+        .summary-table { width: 300px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 0.9rem; }
+        .summary-row.total { border-top: 2px solid var(--primary); margin-top: 10px; padding-top: 15px; font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+
+        .footer { margin-top: 60px; padding-top: 30px; border-top: 1px dashed var(--border); text-align: center; position: relative; z-index: 1; }
+        .footer p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        .footer .terms { font-weight: 600; color: var(--text-main); margin-top: 15px; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .invoice-box { box-shadow: none; padding: 0; border-radius: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="invoice-box">
+    <div class="header">
+        <div class="brand-section">
+            <h1>SEN TERANGA BUSINESS</h1>
+            <p>Vente de Smartphones & Matériel Informatique</p>
+            <p>Dakar, Sénégal — Tél: +221 77 000 00 00</p>
+        </div>
+        <div class="meta-section">
+            <h2>FACTURE</h2>
+            <p>N° {{ sale.invoice_number }}</p>
+            <span>Date: {{ sale.date|date:"d F Y — H:i" }}</span>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>Facturé à</h3>
+            {% if sale.client %}
+                <p>{{ sale.client.name }}</p>
+                <p style="font-weight:400; color:var(--text-muted);">{{ sale.client.phone }}</p>
+                <p style="font-weight:400; color:var(--text-muted);">{{ sale.client.address|default:"" }}</p>
+            {% else %}
+                <p>Client Passager</p>
+            {% endif %}
+        </div>
+        <div class="info-card">
+            <h3>Informations Vente</h3>
+            <p>Vendeur: {{ sale.seller.get_full_name|default:sale.seller.username }}</p>
+            <p>Paiement: {{ sale.get_payment_method_display }}</p>
+            <p>Statut: <span style="color:{% if sale.status == 'completed' %}#10B981{% else %}#EF4444{% endif %};">{{ sale.get_status_display|upper }}</span></p>
+        </div>
+    </div>
+
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Désignation de l'Article</th>
+                <th>IMEI / Série</th>
+                <th>État</th>
+                <th style="text-align: right;">Prix Unitaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>
+                    <span class="item-name">{{ item.product.brand|upper }} {{ item.product.name }}</span>
+                    <span class="item-meta">Garantie {{ item.warranty_months }} mois</span>
+                </td>
+                <td><code style="background:#F8FAFC; padding:4px 8px; border-radius:4px;">{{ item.product_unit.imei_serial|default:"-" }}</code></td>
+                <td>{{ item.product_unit.get_condition_display|default:"-" }}</td>
+                <td style="text-align: right; font-weight: 700;">{{ item.unit_price|intcomma }} F</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="summary-section">
+        <div class="summary-table">
+            <div class="summary-row">
+                <span>Sous-total</span>
+                <span>{{ sale.subtotal|intcomma }} F</span>
+            </div>
+            {% if sale.discount > 0 %}
+            <div class="summary-row" style="color:var(--primary);">
+                <span>Remise</span>
+                <span>- {{ sale.discount|intcomma }} F</span>
+            </div>
+            {% endif %}
+            <div class="summary-row total">
+                <span>TOTAL</span>
+                <span>{{ sale.total_amount|intcomma }} F</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p class="terms">Merci pour votre confiance !</p>
+        <p>Les articles vendus bénéficient d'une garantie limitée comme spécifié ci-dessus.</p>
+        <p>En cas de SAV, veuillez présenter obligatoirement cette facture originale.</p>
+        <p style="margin-top:20px; font-weight:bold; color:var(--text-main);">SEN TERANGA BUSINESS — L'excellence au service de votre technologie.</p>
+    </div>
+</div>
+
+<div class="no-print" style="text-align:center; margin-top:30px;">
+    <button onclick="window.print()" style="padding:15px 40px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">
+        <i class="fas fa-print"></i> IMPRIMER LA FACTURE
+    </button>
+</div>
+
+<script>
+    // window.onload = function() { window.print(); }
+</script>
+
+</body>
+</html>

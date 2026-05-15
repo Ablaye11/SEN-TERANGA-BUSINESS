@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}Maintenance Système{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Maintenance & Paramètres</h2>
+        <p style="color:var(--text-muted);">Gérez la santé de votre système et les données globales.</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Reset Section -->
+    <div class="card" style="border-color: #FECACA;">
+        <div class="card-header" style="background: #FEF2F2; border-bottom-color: #FECACA;">
+            <h2 style="color: #991B1B;"><i class="fas fa-triangle-exclamation"></i> Zone de Danger</h2>
+        </div>
+        <div class="card-body">
+            <p style="margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6;">
+                Cette action va <strong>SUPPRIMER DÉFINITIVEMENT</strong> toutes les données du système :
+            </p>
+            <ul style="margin-bottom: 25px; margin-left: 20px; font-size: 0.9rem; color: #7F1D1D;">
+                <li>Toutes les ventes et paiements</li>
+                <li>Tout le catalogue produit</li>
+                <li>Tout le stock (IMEI)</li>
+                <li>Tous les clients et le SAV</li>
+                <li>Tout le journal d'activité</li>
+            </ul>
+
+            <form action="{% url 'audit:reset' %}" method="post" id="resetForm">
+                {% csrf_token %}
+                <div style="background: #FFF7ED; padding: 15px; border-radius: 12px; border: 1px solid #FFEDD5; margin-bottom: 20px;">
+                    <label style="display:flex; align-items:center; gap:12px; cursor:pointer; color: #9A3412; font-weight: 700; font-size: 0.85rem;">
+                        <input type="checkbox" id="confirmCheck" style="width:18px; height:18px;">
+                        Je confirme vouloir tout effacer pour lancer la boutique.
+                    </label>
+                </div>
+                
+                <button type="submit" id="resetBtn" class="btn-new-prod" style="background: #EF4444; width: 100%; justify-content: center; opacity: 0.5; pointer-events: none;">
+                    <i class="fas fa-trash-can"></i> RÉINITIALISER TOUT LE SYSTÈME
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="card">
+        <div class="card-header">
+            <h2>État du Système</h2>
+        </div>
+        <div class="card-body">
+            <div class="kpi-card" style="box-shadow: none; border: 1px solid var(--border); margin-bottom: 15px;">
+                <div class="kpi-label">Version du Logiciel</div>
+                <div class="kpi-value" style="font-size: 1.2rem;">v2.5 Premium</div>
+            </div>
+            <div class="kpi-card" style="box-shadow: none; border: 1px solid var(--border);">
+                <div class="kpi-label">Base de Données</div>
+                <div class="kpi-value" style="font-size: 1.2rem; color: var(--success);">Connectée & Optimisée</div>
+            </div>
+            
+            <div style="margin-top: 25px; padding: 20px; background: #F8FAFC; border-radius: 15px; font-size: 0.85rem;">
+                <h4 style="margin-bottom: 10px;"><i class="fas fa-circle-info"></i> Note de Production</h4>
+                <p>N'utilisez la réinitialisation que lors de l'installation initiale ou si vous souhaitez vider vos données de test avant l'ouverture officielle.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const check = document.getElementById('confirmCheck');
+    const btn = document.getElementById('resetBtn');
+    
+    check.addEventListener('change', function() {
+        if(this.checked) {
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+        } else {
+            btn.style.opacity = "0.5";
+            btn.style.pointerEvents = "none";
+        }
+    });
+
+    document.getElementById('resetForm').addEventListener('submit', function(e) {
+        if(!confirm("ATTENTION : Cette action est IRREVERSIBLE. Voulez-vous vraiment continuer ?")) {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

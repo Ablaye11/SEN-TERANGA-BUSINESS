@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block page_title %}Fournisseurs{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-3">
+    <h2>Liste des Fournisseurs</h2>
+    <a href="{% url 'stock:supplier_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Nouveau Fournisseur</a>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td><strong>{{ supplier.name }}</strong></td>
+                    <td>{{ supplier.phone|default:"-" }}</td>
+                    <td>{{ supplier.email|default:"-" }}</td>
+                    <td><a href="{% url 'stock:supplier_edit' supplier.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> Modifier</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center" style="padding:40px;">Aucun fournisseur enregistré</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

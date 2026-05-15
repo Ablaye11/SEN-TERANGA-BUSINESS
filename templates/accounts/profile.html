@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block page_title %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:600px;">
+    <div class="card-header"><h2>Informations Personnelles</h2></div>
+    <div class="card-body">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="user-avatar" style="width:80px; height:80px; font-size:2rem;">{{ request.user.username|truncatechars:1|upper }}</div>
+            <div>
+                <h3 style="font-size:1.5rem;">{{ request.user.get_full_name|default:request.user.username }}</h3>
+                <p style="color:var(--text-muted);">{{ request.user.get_role_display }}</p>
+            </div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><p>{{ request.user.email|default:"Non renseigné" }}</p></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><p>{{ request.user.phone|default:"Non renseigné" }}</p></div>
+        <div class="mt-3">
+            <a href="{% url 'accounts:logout' %}" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

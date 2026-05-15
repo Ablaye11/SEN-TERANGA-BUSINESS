@@ -1,0 +1,193 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SEN GLOBAL BUSINESS{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="app-layout">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-globe"></i>
+                <div>
+                    SEN GLOBAL
+                    <span>BUSINESS</span>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">Principal</div>
+            <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-grid-2"></i> Tableau de Bord
+            </a>
+            <a href="{% url 'sales:pos' %}" class="nav-link {% if request.resolver_match.url_name == 'pos' %}active{% endif %}">
+                <i class="fas fa-rocket"></i> Point de Vente <span class="nav-badge">POS</span>
+            </a>
+
+            <div class="nav-section-title">Gestion</div>
+            <a href="{% url 'sales:list' %}" class="nav-link {% if request.resolver_match.app_name == 'sales' and request.resolver_match.url_name == 'list' %}active{% endif %}">
+                <i class="fas fa-receipt"></i> Ventes & Factures
+            </a>
+            <a href="{% url 'products:list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
+                <i class="fas fa-mobile-screen-button"></i> Catalogue Produits
+            </a>
+            <a href="{% url 'stock:overview' %}" class="nav-link {% if request.resolver_match.app_name == 'stock' %}active{% endif %}">
+                <i class="fas fa-boxes-stacked"></i> Gestion Stock
+                {% if low_stock_count > 0 %}
+                <span class="nav-badge" style="background:#EF4444;">{{ low_stock_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'clients:list' %}" class="nav-link {% if request.resolver_match.app_name == 'clients' %}active{% endif %}">
+                <i class="fas fa-user-group"></i> Clients
+            </a>
+            <a href="{% url 'sav:repair_list' %}" class="nav-link {% if request.resolver_match.app_name == 'sav' %}active{% endif %}">
+                <i class="fas fa-screwdriver-wrench"></i> Atelier SAV
+                {% if pending_repairs_count > 0 %}
+                <span class="nav-badge" style="background:var(--primary);">{{ pending_repairs_count }}</span>
+                {% endif %}
+            </a>
+
+            <div class="nav-section-title">Finance & Rapports</div>
+            <a href="{% url 'clients:debt_recovery' %}" class="nav-link {% if request.resolver_match.url_name == 'debt_recovery' %}active{% endif %}">
+                <i class="fas fa-hand-holding-dollar"></i> Recouvrement Dettes
+            </a>
+
+            {% if request.user.is_admin_user %}
+            <div class="nav-section-title">Administration</div>
+            <a href="{% url 'sales:profit_report' %}" class="nav-link {% if request.resolver_match.url_name == 'profit_report' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i> Rapport Profits
+            </a>
+            <a href="{% url 'audit:log_list' %}" class="nav-link {% if 'audit/logs' in request.path %}active{% endif %}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Journal d'Activité</span>
+            </a>
+            <a href="{% url 'audit:maintenance' %}" class="nav-link {% if 'maintenance' in request.path %}active{% endif %}">
+                <i class="fas fa-gears"></i>
+                <span>Maintenance</span>
+            </a>
+            {% endif %}
+
+            <!-- IMEI Trace Quick Search -->
+            <div style="padding:15px; margin-top:20px;">
+                <form action="{% url 'products:trace' %}" method="get">
+                    <div class="search-input-group" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
+                        <i class="fas fa-barcode" style="color:#475569; font-size: 0.8rem;"></i>
+                        <input type="text" id="globalImeiSearch" name="q" placeholder="Tracer IMEI..." style="background:transparent; color:white; font-size:0.75rem; padding: 10px;">
+                        <i class="fas fa-camera" onclick="startScanner('globalImeiSearch')" style="color:var(--primary); cursor:pointer; font-size: 0.9rem; margin-right: 10px;"></i>
+                    </div>
+                </form>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" style="background: var(--primary-gradient);">{{ request.user.username|truncatechars:1|upper }}</div>
+                <div class="user-details">
+                    <h4>{{ request.user.get_full_name|default:request.user.username }}</h4>
+                    <p>{{ request.user.get_role_display }}</p>
+                </div>
+            </div>
+            <a href="{% url 'accounts:logout' %}" style="color:#64748B; transition: color 0.2s;"><i class="fas fa-power-off"></i></a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        <div class="topbar">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <button class="mobile-toggle" onclick="toggleSidebar()" style="display:none;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-title">
+                    {% block page_title_top %}Catalogue Produits{% endblock %}
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:24px;">
+                <a href="{% url 'sales:pos' %}" class="btn-new-sale" style="padding: 10px 20px; font-size: 0.8rem;">
+                    <i class="fas fa-plus-circle"></i> Nouvelle Vente
+                </a>
+                <div class="topbar-date">
+                    <i class="fa-regular fa-calendar-check" style="color: var(--primary);"></i> {% now "l j F Y" %}
+                </div>
+            </div>
+        </div>
+
+        <div class="page-content">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<!-- Universal Scan Modal -->
+<div id="scanModal" class="modal-premium" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div class="card" style="width:90%; max-width:500px; padding:20px; position:relative;">
+        <div class="card-header" style="border:none;">
+            <h2>Scanner IMEI / Code-barres</h2>
+            <button onclick="stopScanner()" style="background:transparent; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="reader" style="width:100%; border-radius:15px; overflow:hidden;"></div>
+        <p style="text-align:center; margin-top:15px; color:var(--text-muted); font-size:0.8rem;">Placez le code-barres au centre du carré</p>
+    </div>
+</div>
+
+<style>
+.modal-premium { display: flex; animation: fadeIn 0.3s ease; }
+</style>
+
+<script>
+let html5QrCode;
+let currentScanTargetId;
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
+function startScanner(targetInputId) {
+    currentScanTargetId = targetInputId;
+    document.getElementById('scanModal').style.display = 'flex';
+    html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+    
+    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+        document.getElementById(currentScanTargetId).value = decodedText;
+        // Trigger input event for search logic
+        document.getElementById(currentScanTargetId).dispatchEvent(new Event('input'));
+        stopScanner();
+    }).catch(err => console.error("Scanner Error:", err));
+}
+
+function stopScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('scanModal').style.display = 'none';
+        });
+    } else {
+        document.getElementById('scanModal').style.display = 'none';
+    }
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

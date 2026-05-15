@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <a href="{% url 'clients:list' %}" class="btn-view" style="padding:10px;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family:'Outfit';">{{ title }}</h2>
+    </div>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <h2>Fiche Identité Client</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Enregistrez les coordonnées pour le suivi des ventes et des dettes.</p>
+    </div>
+    <div class="card-body">
+        <form method="post" class="premium-form">
+            {% csrf_token %}
+            
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Nom Complet du Client</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-user-tag"></i>
+                        {{ form.name }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Numéro de Téléphone</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-phone"></i>
+                        {{ form.phone }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adresse Email</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-envelope"></i>
+                        {{ form.email }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Adresse Physique</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-location-dot"></i>
+                        {{ form.address }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Notes / Observations</label>
+                    <div class="search-input-group" style="align-items: flex-start;">
+                        <i class="fas fa-comment-dots" style="margin-top:15px;"></i>
+                        {{ form.notes }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:40px; display:flex; justify-content: flex-end; gap:15px;">
+                <a href="{% url 'clients:list' %}" class="btn-view" style="padding:15px 30px;">Annuler</a>
+                <button type="submit" class="btn-new-prod" style="padding:15px 40px;">
+                    <i class="fas fa-save"></i> Enregistrer le Client
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Styling for Django form widgets to match our premium look */
+    .premium-form input, .premium-form select, .premium-form textarea {
+        width: 100%; border: none; background: transparent; padding: 12px;
+        outline: none; font-family: inherit; font-size: 1rem; color: var(--text-main);
+    }
+    .premium-form textarea { min-height: 80px; }
+    
+    .form-group label {
+        display: block; font-size: 0.8rem; color: #64748B; font-weight: 700;
+        margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+</style>
+{% endblock %}

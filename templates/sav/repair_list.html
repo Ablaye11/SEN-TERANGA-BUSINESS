@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Atelier SAV{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 style="font-family:'Outfit';">Gestion des Réparations</h2>
+        <p style="color:var(--text-muted);">Suivi technique des appareils clients.</p>
+    </div>
+    <a href="{% url 'sav:repair_create' %}" class="btn-new-prod"><i class="fas fa-plus"></i> Enregistrer un Appareil</a>
+</div>
+
+<!-- SAV Stats -->
+<div class="kpi-grid" style="margin-bottom: 30px;">
+    <div class="kpi-card" style="border-left: 4px solid #F59E0B;">
+        <div class="kpi-label">En Attente / Diagnostic</div>
+        <div class="kpi-value">{{ pending_repairs_count }}</div>
+    </div>
+    <div class="kpi-card" style="border-left: 4px solid #10B981;">
+        <div class="kpi-label">Prêts à Récupérer</div>
+        <div class="kpi-value">{{ ready_repairs_count|default:0 }}</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Total Livrés (Mois)</div>
+        <div class="kpi-value">{{ delivered_this_month|default:0 }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+        <div class="flex gap-2" style="flex-wrap: wrap;">
+            <a href="?status=" class="btn-view {% if not status_filter %}active-filter{% endif %}">Tout</a>
+            <a href="?status=pending" class="btn-view {% if status_filter == 'pending' %}active-filter{% endif %}">En Attente</a>
+            <a href="?status=repairing" class="btn-view {% if status_filter == 'repairing' %}active-filter{% endif %}">En Cours</a>
+            <a href="?status=ready" class="btn-view {% if status_filter == 'ready' %}active-filter{% endif %}">Prêts</a>
+        </div>
+        <div class="search-input-group" style="width:100%;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="repairSearch" placeholder="Client, appareil, n° série...">
+        </div>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table class="data-table" id="repairTable">
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Appareil / Problème</th>
+                    <th>Statut</th>
+                    <th style="text-align:right;">Coût Est.</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for repair in repairs %}
+                <tr>
+                    <td><strong style="color:var(--primary);">#{{ repair.id }}</strong></td>
+                    <td style="font-size:0.85rem; color:var(--text-muted);">{{ repair.created_at|date:"d/m/Y" }}</td>
+                    <td><strong>{{ repair.client.name }}</strong></td>
+                    <td>
+                        <div style="font-weight:600;">{{ repair.device_name }}</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">{{ repair.problem_description|truncatechars:40 }}</div>
+                    </td>
+                    <td>
+                        {% if repair.status == 'pending' %}
+                            <span class="badge-alert" style="position:static; background:#FEF3C7; color:#92400E; font-size:0.7rem;">EN ATTENTE</span>
+                        {% elif repair.status == 'repairing' %}
+                            <span class="badge-alert" style="position:static; background:#DBEAFE; color:#1E40AF; font-size:0.7rem;">EN COURS</span>
+                        {% elif repair.status == 'ready' %}
+                            <span class="badge-new" style="position:static; background:#DEF7EC; color:#03543F; font-size:0.7rem;">PRÊT</span>
+                        {% elif repair.status == 'delivered' %}
+                            <span style="color:var(--text-muted); font-size:0.75rem;"><i class="fas fa-check-double"></i> LIVRÉ</span>
+                        {% else %}
+                            <span style="color:#EF4444; font-size:0.7rem;">{{ repair.get_status_display|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right; font-weight:800;">{{ repair.estimated_cost|intcomma }} F</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <a href="{% url 'sav:repair_detail' repair.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-eye"></i></a>
+                            <a href="{% url 'sav:repair_print' repair.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-print"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center" style="padding:40px;">Aucune réparation enregistrée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+<script>
+document.getElementById('repairSearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#repairTable tbody tr').forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
+
+<style>
+.active-filter { background: var(--primary-gradient) !important; color: white !important; border-color: transparent !important; box-shadow: 0 4px 12px rgba(197, 47, 51, 0.2); }
+</style>
+{% endblock %}

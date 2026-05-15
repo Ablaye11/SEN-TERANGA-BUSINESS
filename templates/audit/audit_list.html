@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}Sécurité & Audit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 style="font-family:'Outfit';">Journal d'Activité</h2>
+        <p style="color:var(--text-muted);">Historique complet des actions effectuées sur le système.</p>
+    </div>
+    <div class="badge-new" style="position:static; background:#EFF6FF; color:#3B82F6; padding:10px 20px;">
+        <i class="fas fa-shield-check"></i> SYSTÈME SÉCURISÉ
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Logs du Système</h2>
+        <div class="search-input-group" style="width:300px;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="auditSearch" placeholder="Rechercher une action, un utilisateur...">
+        </div>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <table class="data-table" id="auditTable">
+            <thead>
+                <tr>
+                    <th>Date & Heure</th>
+                    <th>Utilisateur</th>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th>Objet</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td style="color:var(--text-muted); font-size:0.85rem;">{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="user-avatar" style="width:25px; height:25px; font-size:0.6rem;">{{ log.user.username|truncatechars:1|upper }}</div>
+                            <strong>{{ log.user.username }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        {% if log.action == 'create' or log.action == 'sale' %}
+                            <span class="badge-new" style="position:static; background:#DEF7EC; color:#03543F; font-size:0.7rem;">{{ log.action|upper }}</span>
+                        {% elif log.action == 'delete' %}
+                            <span class="badge-alert" style="position:static; font-size:0.7rem;">SUPPRESSION</span>
+                        {% else %}
+                            <span class="badge-alert" style="position:static; background:#F1F5F9; color:#475569; font-size:0.7rem;">{{ log.action|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="max-width:300px; font-size:0.9rem;">{{ log.description }}</td>
+                    <td><small style="color:var(--text-muted);">{{ log.model_name }} #{{ log.object_id }}</small></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center" style="padding:40px;">Aucune activité enregistrée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.getElementById('auditSearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#auditTable tbody tr').forEach(tr => {
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

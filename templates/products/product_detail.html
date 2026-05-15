@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Détails du Produit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <a href="{% url 'products:list' %}" class="btn-view" style="padding:10px;"><i class="fas fa-arrow-left"></i></a>
+        <div>
+            <h2>{{ product.name }}</h2>
+            <p style="color:var(--text-muted);">{{ product.get_category_display }} | {{ product.brand }}</p>
+        </div>
+    </div>
+    {% if request.user.is_admin_user %}
+    <div class="flex gap-2">
+        <a href="{% url 'products:edit' product.pk %}" class="btn-view"><i class="fas fa-edit"></i> Modifier</a>
+        <a href="{% url 'products:delete' product.pk %}" class="btn-view" style="color:#EF4444; border-color:#EF4444;"><i class="fas fa-trash"></i> Supprimer</a>
+        <a href="{% url 'products:unit_create_for_product' product.pk %}" class="btn-new-prod"><i class="fas fa-plus"></i> Ajouter au Stock</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="grid-2">
+    <!-- Main Info -->
+    <div class="card">
+        <div class="card-header"><h2>Aperçu & Informations</h2></div>
+        <div class="card-body">
+            <div class="product-detail-flex" style="display:flex; gap:30px; align-items:flex-start;">
+                {% if product.image %}
+                <div style="width:200px; height:200px; border-radius:15px; overflow:hidden; border:1px solid var(--border);">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                {% endif %}
+                <div style="flex:1;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+                <div class="form-group"><label class="form-label">Marque</label><p><strong>{{ product.brand }}</strong></p></div>
+                <div class="form-group"><label class="form-label">Catégorie</label><p>{{ product.get_category_display }}</p></div>
+                <div class="form-group"><label class="form-label">Prix de Vente Conseillé</label><p class="product-card-price">{{ product.selling_price|intcomma }} F</p></div>
+                <div class="form-group"><label class="form-label">Seuil d'Alerte Stock</label><p>{{ product.alert_threshold }} unités</p></div>
+            </div>
+            {% if product.description %}
+            <div class="form-group mt-3"><label class="form-label">Description</label><p>{{ product.description }}</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="kpi-grid" style="margin-bottom:0; grid-template-columns: 1fr 1fr;">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#ECFDF5; color:#10B981;"><i class="fas fa-box-open"></i></div>
+            <div class="kpi-label">En Stock</div>
+            <div class="kpi-value">{{ in_stock }}</div>
+            <div class="kpi-sub">Unités prêtes à la vente</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#EFF6FF; color:#3B82F6;"><i class="fas fa-cart-shopping"></i></div>
+            <div class="kpi-label">Total Vendu</div>
+            <div class="kpi-value">{{ sold }}</div>
+            <div class="kpi-sub">Depuis la création</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h2>Unités Spécifiques (Stock Réel)</h2>
+        <span class="badge-new" style="position:static;">IMEI / NUMÉROS DE SÉRIE</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>IMEI / Série</th>
+                    <th>Couleur</th>
+                    <th>Capacité</th>
+                    <th>État</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for unit in units %}
+                <tr>
+                    <td><code>{{ unit.imei_serial }}</code></td>
+                    <td>{{ unit.color|default:"-" }}</td>
+                    <td>{{ unit.storage|default:"-" }}</td>
+                    <td>{{ unit.get_condition_display }}</td>
+                    <td>
+                        {% if unit.status == 'in_stock' %}<span style="color:#10B981; font-weight:700;">En Stock</span>
+                        {% else %}<span style="color:var(--text-muted);">Vendu</span>{% endif %}
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <a href="{% url 'products:unit_detail' unit.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-eye"></i></a>
+                            {% if request.user.role == 'admin' %}
+                            <a href="{% url 'products:unit_edit' unit.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-edit"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

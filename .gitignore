@@ -1,0 +1,9 @@
+db.sqlite3
+media/
+__pycache__/
+*.pyc
+.env
+.gemini/
+staticfiles/
+v單/
+.vscode/

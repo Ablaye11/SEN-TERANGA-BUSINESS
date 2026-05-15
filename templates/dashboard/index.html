@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Bonjour, {{ request.user.get_full_name|default:request.user.username }} 👋</h2>
+</div>
+
+<!-- Welcome Section -->
+<div class="card" style="background: var(--primary-gradient); color: white; border: none; padding: 10px; margin-bottom: 30px;">
+    <div class="card-body" style="display:flex; justify-content:space-between; align-items:center; gap:20px;">
+        <div>
+            <h1 style="font-family:'Outfit'; font-size:1.6rem; margin-bottom:5px;">Bienvenue sur SEN TERANGA BUSINESS ! 🇸🇳</h1>
+            <p style="opacity:0.9; font-size:0.9rem;">Prêt à booster vos ventes ? Voici vos premières étapes :</p>
+            <div style="display:flex; gap:15px; margin-top:20px; flex-wrap: wrap;">
+                <a href="{% url 'products:create' %}" style="background:white; color:var(--primary); padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.8rem;"><i class="fas fa-plus"></i> 1. Créer un Produit</a>
+                <a href="{% url 'products:unit_create' %}" style="background:rgba(255,255,255,0.2); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.8rem;"><i class="fas fa-barcode"></i> 2. Ajouter du Stock</a>
+                <a href="{% url 'sales:pos' %}" style="background:var(--accent); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:700; font-size:0.8rem;"><i class="fas fa-shopping-cart"></i> 3. Faire une Vente</a>
+            </div>
+        </div>
+        <div style="font-size:4rem; opacity:0.2;" class="hide-mobile"><i class="fas fa-rocket"></i></div>
+    </div>
+</div>
+
+<!-- Main KPIs -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#ECFDF5; color:#10B981;"><i class="fas fa-sack-dollar"></i></div>
+        <div class="kpi-label">Chiffre d'Affaires (Mois)</div>
+        <div class="kpi-value">{{ month_revenue|intcomma }} F</div>
+        <div class="kpi-sub">{{ month_count }} vente(s) ce mois-ci</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#FFFBEB; color:#F59E0B;"><i class="fas fa-hand-holding-dollar"></i></div>
+        <div class="kpi-label">Dettes à Recouvrer</div>
+        <div class="kpi-value" style="color:var(--primary);">{{ total_debt|intcomma }} F</div>
+        <div class="kpi-sub">{{ debtors_count }} client(s) à relancer</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#EFF6FF; color:#3B82F6;"><i class="fas fa-screwdriver-wrench"></i></div>
+        <div class="kpi-label">Appareils en SAV</div>
+        <div class="kpi-value">{{ pending_repairs }}</div>
+        <div class="kpi-sub">{{ ready_repairs }} réparation(s) prête(s)</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#F1F5F9; color:#64748B;"><i class="fas fa-layer-group"></i></div>
+        <div class="kpi-label">Articles en Stock</div>
+        <div class="kpi-value">{{ total_in_stock }}</div>
+        <div class="kpi-sub">{{ total_products }} modèles référencés</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Sales Graph -->
+    <div class="card">
+        <div class="card-header"><h2>📊 Évolution des Ventes</h2></div>
+        <div class="card-body">
+            <div style="height: 300px;">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header"><h2>⚡ Actions Rapides</h2></div>
+        <div class="card-body">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" class="grid-1-mobile">
+                <a href="{% url 'sales:pos' %}" class="btn-view" style="height:100px; flex-direction:column; gap:10px; justify-content:center;">
+                    <i class="fas fa-cash-register" style="font-size:1.5rem;"></i> Caisse (POS)
+                </a>
+                <a href="{% url 'products:unit_create' %}" class="btn-view" style="height:100px; flex-direction:column; gap:10px; justify-content:center;">
+                    <i class="fas fa-box-open" style="font-size:1.5rem;"></i> Entrée Stock
+                </a>
+                <a href="{% url 'clients:debt_recovery' %}" class="btn-view" style="height:100px; flex-direction:column; gap:10px; justify-content:center; color:#EF4444; border-color:#FECACA;">
+                    <i class="fas fa-hand-holding-dollar" style="font-size:1.5rem;"></i> Recouvrement
+                </a>
+                <a href="{% url 'sav:repair_create' %}" class="btn-view" style="height:100px; flex-direction:column; gap:10px; justify-content:center;">
+                    <i class="fas fa-tools" style="font-size:1.5rem;"></i> Nouveau SAV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2 mt-4" style="margin-top: 30px;">
+    <!-- Recent Sales -->
+    <div class="card">
+        <div class="card-header"><h2>🛒 Ventes Récentes</h2></div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead><tr><th>Facture</th><th>Client</th><th>Total</th><th>Statut</th></tr></thead>
+                    <tbody>
+                    {% for sale in recent_sales %}
+                    <tr>
+                        <td><strong>{{ sale.invoice_number }}</strong></td>
+                        <td>{{ sale.client.name|default:"Passager" }}</td>
+                        <td style="font-weight:700;">{{ sale.total_amount|intcomma }} F</td>
+                        <td>
+                            {% if sale.status == 'completed' %}<span style="color:#10B981; font-weight:700;"><i class="fas fa-circle-check"></i> Payée</span>
+                            {% elif sale.status == 'partial' %}<span style="color:#F59E0B; font-weight:700;"><i class="fas fa-clock"></i> Partielle</span>
+                            {% else %}<span style="color:#EF4444; font-weight:700;"><i class="fas fa-circle-exclamation"></i> Dette</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Alerts -->
+    <div class="card">
+        <div class="card-header"><h2>⚠️ Alertes Stock</h2></div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead><tr><th>Produit</th><th>Quantité</th><th>État</th></tr></thead>
+                    <tbody>
+                    {% for item in low_stock %}
+                    <tr>
+                        <td><strong>{{ item.product }}</strong></td>
+                        <td><span class="badge-alert" style="position:static;">{{ item.count }} unités</span></td>
+                        <td><span style="color:#EF4444; font-weight:700;">Stock Bas</span></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Data -->
+{{ daily_data|json_script:"daily-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const dailyData = JSON.parse(document.getElementById('daily-data').textContent);
+const ctx = document.getElementById('salesChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: dailyData.map(d => d.date),
+        datasets: [
+        {
+            label: 'Ventes (F)',
+            data: dailyData.map(d => d.total),
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+        },
+        {
+            label: 'Bénéfice (F)',
+            data: dailyData.map(d => d.profit),
+            borderColor: '#10B981',
+            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { 
+            legend: { display: true, position: 'top', labels: { font: { weight: '600' } } },
+            tooltip: {
+                backgroundColor: '#1E293B',
+                padding: 12,
+                cornerRadius: 10,
+                displayColors: true
+            }
+        },
+        scales: {
+            y: { 
+                grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false }, 
+                ticks: { color: '#64748B', font: { weight: '600' }, callback: v => v.toLocaleString() + ' F' } 
+            },
+            x: { grid: { display: false }, ticks: { color: '#64748B', font: { weight: '600' } } }
+        }
+    }
+});
+</script>
+
+<style>
+@media (max-width: 768px) {
+    .grid-1-mobile { grid-template-columns: 1fr !important; }
+}
+</style>
+{% endblock %}

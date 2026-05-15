@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block page_title %}Détail Arrivage: {{ entry.reference }}{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><h2>Informations Générales</h2></div>
+        <div class="card-body">
+            <div class="form-row mb-2">
+                <div><span class="form-label">Référence</span><p><strong>{{ entry.reference }}</strong></p></div>
+                <div><span class="form-label">Date</span><p>{{ entry.date|date:"d/m/Y" }}</p></div>
+            </div>
+            <div class="form-row mb-2">
+                <div><span class="form-label">Fournisseur</span><p>{{ entry.supplier.name|default:"-" }}</p></div>
+                <div><span class="form-label">Coût Total</span><p style="font-weight:700; color:var(--primary);">{{ entry.total_cost|intcomma }} FCFA</p></div>
+            </div>
+            {% if entry.notes %}<div class="mt-2"><span class="form-label">Notes</span><p>{{ entry.notes }}</p></div>{% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>Unités Ajoutées</h2></div>
+        <div class="card-body" style="padding:0;">
+            <table class="data-table">
+                <thead><tr><th>Produit</th><th>IMEI / Série</th></tr></thead>
+                <tbody>
+                    {% for m in movements %}
+                    <tr>
+                        <td><strong>{{ m.product_unit.product.name }}</strong></td>
+                        <td>{{ m.product_unit.imei_serial }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center" style="padding:20px;">Aucune unité liée</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

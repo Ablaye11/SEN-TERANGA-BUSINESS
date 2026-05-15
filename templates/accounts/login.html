@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - SEN GLOBAL BUSINESS</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); 
+            display: flex; align-items: center; justify-content: center; height: 100vh;
+        }
+        .login-card {
+            width: 100%; max-width: 450px; background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px; padding: 50px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+        .login-logo {
+            text-align: center; margin-bottom: 40px; color: white;
+        }
+        .login-logo i {
+            font-size: 3rem; background: var(--primary-gradient);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        .login-logo h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; }
+        .login-logo p { color: #94A3B8; font-size: 0.9rem; margin-top: 5px; }
+
+        .form-label { color: #CBD5E1; margin-bottom: 10px; display: block; font-weight: 600; font-size: 0.85rem; }
+        .input-dark {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; width: 100%; padding: 15px 20px; border-radius: 16px;
+            font-size: 1rem; transition: all 0.2s; outline: none;
+        }
+        .input-dark:focus { border-color: var(--primary); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 4px rgba(197, 47, 51, 0.2); }
+        
+        .btn-login {
+            width: 100%; padding: 16px; border-radius: 16px; border: none;
+            background: var(--primary-gradient); color: white; font-weight: 800;
+            font-size: 1rem; cursor: pointer; margin-top: 20px;
+            box-shadow: 0 10px 20px rgba(197, 47, 51, 0.3); transition: all 0.2s;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(197, 47, 51, 0.4); }
+        
+        .alert-login {
+            background: rgba(239, 68, 68, 0.1); color: #FCA5A5;
+            padding: 15px; border-radius: 14px; margin-bottom: 25px;
+            font-size: 0.85rem; text-align: center; border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <i class="fas fa-globe"></i>
+            <h1>SEN GLOBAL</h1>
+            <p>Gestion de Stock & Ventes</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert-login">
+            <i class="fas fa-exclamation-circle"></i> Identifiants incorrects. Veuillez réessayer.
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label class="form-label">Nom d'utilisateur</label>
+                <input type="text" name="username" class="input-dark" placeholder="ex: admin" required autofocus>
+            </div>
+            <div style="margin-bottom: 30px;">
+                <label class="form-label">Mot de passe</label>
+                <input type="password" name="password" class="input-dark" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-login">
+                SE CONNECTER <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 30px; color: #64748B; font-size: 0.75rem;">
+            &copy; {% now "Y" %} SEN GLOBAL BUSINESS. Tous droits réservés.
+        </div>
+    </div>
+</body>
+</html>

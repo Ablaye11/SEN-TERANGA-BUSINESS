@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Rapport des Profits{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Rapport de Profits & Marges</h2>
+    <a href="{% url 'sales:export_profits' %}" class="btn-view"><i class="fas fa-file-csv"></i> Exporter Détails (CSV)</a>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Période</th>
+                    <th>Chiffre d'Affaires</th>
+                    <th>Bénéfice Net</th>
+                    <th>Marge (%)</th>
+                    <th>Graphique</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in months_data %}
+                <tr>
+                    <td><strong>{{ item.month }}</strong></td>
+                    <td style="font-weight:600;">{{ item.revenue|intcomma }} F</td>
+                    <td style="font-weight:800; color:#10B981;">{{ item.profit|intcomma }} F</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="flex:1; height:8px; background:#eee; border-radius:4px; overflow:hidden;">
+                                <div style="--w: {{ item.margin|floatformat:0 }}%; width: var(--w); height:100%; background:#10B981;"></div>
+                            </div>
+                            <span style="font-size:0.8rem; font-weight:700;">{{ item.margin|floatformat:1 }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if item.revenue > 0 %}
+                        <span class="badge badge-success">Rentable</span>
+                        {% else %}
+                        <span class="badge badge-secondary">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4" style="padding:20px; background:var(--primary-bg); border-radius:15px; color:var(--primary);">
+    <i class="fas fa-info-circle"></i> 
+    <strong>Note :</strong> Le bénéfice net est calculé comme : <code>(Prix de vente - Prix d'achat) - Remises accordées</code>. 
+    Les frais fixes (loyer, électricité) ne sont pas inclus dans ce calcul.
+</div>
+{% endblock %}

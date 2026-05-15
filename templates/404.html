@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}Page Introuvable{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:100px 20px; text-align:center;">
+    <div style="font-size:8rem; font-weight:900; background:var(--primary-gradient); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; opacity:0.1; line-height:1;">404</div>
+    <div style="margin-top:-60px;">
+        <i class="fas fa-search" style="font-size:4rem; color:var(--primary); margin-bottom:20px; display:block;"></i>
+        <h2 style="font-size:2rem; font-weight:800; color:var(--text-main);">Oups ! Page Introuvable</h2>
+        <p style="color:var(--text-muted); max-width:500px; margin: 20px auto;">Il semble que la page que vous recherchez n'existe pas ou a été déplacée. Pas d'inquiétude, revenez sur vos pas !</p>
+        <a href="{% url 'dashboard:index' %}" class="btn-new-prod" style="margin-top:30px; display:inline-flex;">
+            <i class="fas fa-home" style="margin-right:10px;"></i> Retour au Tableau de Bord
+        </a>
+    </div>
+</div>
+{% endblock %}

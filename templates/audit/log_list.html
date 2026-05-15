@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block page_title_top %}Journal d'Activité{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Traces et Sécurité du Système</h2>
+</div>
+
+<div class="card">
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date & Heure</th>
+                        <th>Utilisateur</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.created_at|date:"d/m/Y H:i:s" }}</td>
+                        <td><strong>{{ log.user.username|default:"Système" }}</strong></td>
+                        <td>
+                            {% if log.action == 'create' %}<span class="badge" style="background:#10B981; color:white; padding:2px 8px; border-radius:4px; font-size:0.7rem;">CRÉATION</span>
+                            {% elif log.action == 'update' %}<span class="badge" style="background:#3B82F6; color:white; padding:2px 8px; border-radius:4px; font-size:0.7rem;">MODIF</span>
+                            {% elif log.action == 'delete' %}<span class="badge" style="background:#EF4444; color:white; padding:2px 8px; border-radius:4px; font-size:0.7rem;">SUPPR</span>
+                            {% elif log.action == 'sale' %}<span class="badge" style="background:#F59E0B; color:white; padding:2px 8px; border-radius:4px; font-size:0.7rem;">VENTE</span>
+                            {% else %}<span class="badge" style="background:#64748B; color:white; padding:2px 8px; border-radius:4px; font-size:0.7rem;">{{ log.action|upper }}</span>{% endif %}
+                        </td>
+                        <td>{{ log.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

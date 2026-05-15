@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Catalogue Produits{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Catalogue Produits</h2>
+    <a href="{% url 'products:create' %}" class="btn-new-prod">+ Nouveau Produit</a>
+</div>
+
+<!-- Filter Bar (Screenshot Match) -->
+<form method="get" class="filter-bar">
+    <div class="search-input-group">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher...">
+    </div>
+    
+    <select name="category" class="filter-select">
+        <option value="">Toutes catégories</option>
+        {% for val, label in categories %}
+        <option value="{{ val }}" {% if val == selected_category %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="brand" class="filter-select">
+        <option value="">Toutes marques</option>
+        {% for val, label in brands %}
+        <option value="{{ val }}" {% if val == selected_brand %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="status" class="filter-select">
+        <option value="">Tous états</option>
+        <option value="neuf">Neuf</option>
+        <option value="occasion">Occasion</option>
+    </select>
+
+    <button type="submit" class="btn-search">
+        <i class="fas fa-search"></i>
+    </button>
+    <a href="{% url 'products:list' %}" class="btn-clear" style="display:flex; align-items:center; justify-content:center; text-decoration:none;">
+        <i class="fas fa-times"></i>
+    </a>
+</form>
+
+<!-- Product Grid -->
+<div class="product-grid" id="productGrid">
+    {% for product in products %}
+    <div class="product-card" data-name="{{ product.name|lower }}" data-brand="{{ product.get_brand_display|lower }}" data-category="{{ product.category|lower }}">
+        <div class="product-card-top">
+            <span class="badge-new">Neuf</span>
+            {% if product.is_low_stock %}
+            <span class="badge-alert"><i class="fas fa-exclamation-triangle"></i> Alerte</span>
+            {% endif %}
+            
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width:100%; height:100%; object-fit:cover;">
+            {% else %}
+                {% if product.category == 'laptop' %}
+                    <i class="fas fa-laptop"></i>
+                {% elif product.category == 'smartphone' %}
+                    <i class="fas fa-mobile-alt"></i>
+                {% elif product.category == 'tablette' %}
+                    <i class="fas fa-tablet-alt"></i>
+                {% else %}
+                    <i class="fas fa-box"></i>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <div class="product-card-info">
+            <div class="product-card-name">{{ product.get_brand_display }} {{ product.name }}</div>
+            <div class="product-card-price">{{ product.selling_price|intcomma }} FCFA</div>
+            <div class="product-card-stock">
+                Stock: {{ product.total_units }} unité(s) {% if product.is_low_stock %}⚠️{% endif %}
+            </div>
+        </div>
+
+        <div class="product-card-actions">
+            <a href="{% url 'products:detail' product.pk %}" class="btn-view">Voir</a>
+            <a href="{% url 'products:edit' product.pk %}" class="btn-edit-sq"><i class="fas fa-edit"></i></a>
+        </div>
+    </div>
+    {% empty %}
+    <div id="noResults" style="grid-column: 1/-1; text-align:center; padding:50px; color:var(--text-muted);">
+        <i class="fas fa-box-open" style="font-size:4rem; margin-bottom:20px; opacity:0.3;"></i>
+        <p>Aucun produit enregistré.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+const searchInput = document.querySelector('input[name="q"]');
+const categorySelect = document.querySelector('select[name="category"]');
+const brandSelect = document.querySelector('select[name="brand"]');
+const cards = document.querySelectorAll('.product-card');
+
+function filterProducts() {
+    const q = searchInput.value.toLowerCase();
+    const cat = categorySelect.value.toLowerCase();
+    const brand = brandSelect.value.toLowerCase();
+    
+    let count = 0;
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        const b = card.dataset.brand;
+        const c = card.dataset.category;
+        
+        const matchesQ = name.includes(q) || b.includes(q);
+        const matchesCat = !cat || c === cat;
+        const matchesBrand = !brand || b === brand;
+        
+        if (matchesQ && matchesCat && matchesBrand) {
+            card.style.display = '';
+            count++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+searchInput.addEventListener('input', filterProducts);
+categorySelect.addEventListener('change', filterProducts);
+brandSelect.addEventListener('change', filterProducts);
+</script>
+{% endblock %}

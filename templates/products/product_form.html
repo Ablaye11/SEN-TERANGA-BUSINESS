@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block page_title_top %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <a href="{% url 'products:list' %}" class="btn-view" style="padding:10px;"><i class="fas fa-arrow-left"></i></a>
+        <h2>{{ title }}</h2>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card-header">
+        <h2>Fiche Catalogue</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Remplissez les informations de base du modèle.</p>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="premium-form">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="alert alert-error" style="margin-bottom: 30px;">
+                <div style="font-weight:800; margin-bottom:10px;"><i class="fas fa-circle-exclamation"></i> Oups ! Il y a des erreurs :</div>
+                <ul style="font-size:0.85rem; margin-left:20px;">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Nom du Produit / Modèle</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-tag"></i>
+                        {{ form.name }}
+                    </div>
+                    {% if form.name.errors %}<small style="color:var(--primary);">{{ form.name.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Marque</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-copyright"></i>
+                        {{ form.brand }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Catégorie</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-layer-group"></i>
+                        {{ form.category }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prix d'Achat (F)</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-cart-shopping"></i>
+                        {{ form.purchase_price }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prix de Vente Conseillé (F)</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-money-bill"></i>
+                        {{ form.selling_price }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Seuil d'Alerte Stock</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        {{ form.alert_threshold }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Description (Optionnel)</label>
+                    <div class="search-input-group" style="align-items: flex-start;">
+                        <i class="fas fa-align-left" style="margin-top:15px;"></i>
+                        {{ form.description }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Image du Produit</label>
+                    <div class="search-input-group" style="padding:10px 20px;">
+                        <i class="fas fa-image"></i>
+                        {{ form.image }}
+                    </div>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        {{ form.is_active }}
+                        <span>Le produit est actif (affiché dans le catalogue et la caisse)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-top:40px; display:flex; justify-content: flex-end; gap:15px;">
+                <a href="{% url 'products:list' %}" class="btn-view" style="padding:15px 30px;">Annuler</a>
+                <button type="submit" class="btn-new-prod" style="padding:15px 40px;">
+                    <i class="fas fa-check-circle"></i> Enregistrer le Produit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Styling for Django form widgets to match our premium look */
+    .premium-form input, .premium-form select, .premium-form textarea {
+        width: 100%; border: none; background: transparent; padding: 12px;
+        outline: none; font-family: inherit; font-size: 0.9rem; color: var(--text-main);
+    }
+    .premium-form textarea { min-height: 100px; }
+    .premium-form select { cursor: pointer; }
+</style>
+{% endblock %}

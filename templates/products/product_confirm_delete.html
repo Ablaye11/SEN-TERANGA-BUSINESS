@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}Confirmer la Suppression{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 50px auto; text-align:center;">
+    <div class="card-header" style="background:#FEF2F2; color:#DC2626;">
+        <h2><i class="fas fa-triangle-exclamation"></i> Action Irréversible</h2>
+    </div>
+    <div class="card-body">
+        <p style="font-size:1.1rem; margin-bottom:20px;">Voulez-vous vraiment supprimer le produit <br><strong>{{ product.name }}</strong> du catalogue ?</p>
+        <p style="color:var(--text-muted); font-size:0.8rem;">Note : Cette action supprimera également toutes les unités (IMEI) associées à ce modèle en stock.</p>
+        
+        <form method="post" style="margin-top:30px; display:flex; gap:15px; justify-content:center;">
+            {% csrf_token %}
+            <a href="{% url 'products:list' %}" class="btn-view" style="padding:10px 25px;">Annuler</a>
+            <button type="submit" class="btn-new-prod" style="background:#DC2626; border-color:#DC2626; padding:10px 25px;">
+                Supprimer Définitivement
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

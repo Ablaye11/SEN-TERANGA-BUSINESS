@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block page_title_top %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:700px;">
+    <div class="card-header"><h2>{{ title }}</h2></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Client</label>
+                <select name="client" class="filter-select" style="width:100%;" required>
+                    <option value="">Sélectionner un client</option>
+                    {% for client in clients %}
+                    <option value="{{ client.id }}">{{ client.name }} ({{ client.phone }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row mb-2" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label class="form-label">Appareil</label>
+                    <input type="text" name="device_name" class="search-input-group" style="padding-left:15px; width:100%;" placeholder="ex: iPhone 13 Pro" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">IMEI / N° Série</label>
+                    <input type="text" name="imei_serial" class="search-input-group" style="padding-left:15px; width:100%;" placeholder="Optionnel">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Problème signalé</label>
+                <textarea name="problem_description" class="search-input-group" style="padding-left:15px; width:100%; min-height:100px;" placeholder="Détails de la panne..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Coût estimé (FCFA)</label>
+                <input type="number" name="estimated_cost" class="search-input-group" style="padding-left:15px; width:100%;" value="0">
+            </div>
+            <div class="form-actions" style="margin-top:20px;">
+                <button type="submit" class="btn-new-prod">Créer la fiche</button>
+                <a href="{% url 'sav:repair_list' %}" class="btn-view">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
