@@ -17,8 +17,6 @@ def login_view(request):
             login(request, user)
             messages.success(request, f'Bienvenue, {user.get_full_name() or user.username} !')
             return redirect('dashboard:index')
-        else:
-            messages.error(request, "Identifiants incorrects.")
     else:
         form = LoginForm()
     
