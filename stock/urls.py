@@ -12,4 +12,5 @@ urlpatterns = [
     path('suppliers/', views.supplier_list, name='supplier_list'),
     path('suppliers/create/', views.supplier_create, name='supplier_create'),
     path('suppliers/<int:pk>/edit/', views.supplier_edit, name='supplier_edit'),
+    path('units/<int:pk>/adjust/', views.stock_adjust_unit, name='adjust_unit'),
 ]

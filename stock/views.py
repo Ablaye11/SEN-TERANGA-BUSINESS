@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from .models import Supplier, StockEntry, StockMovement
-from .forms import SupplierForm, StockEntryForm
+from .forms import SupplierForm, StockEntryForm, StockAdjustmentForm
 from products.models import Product, ProductUnit
 
 
@@ -117,4 +117,34 @@ def supplier_edit(request, pk):
         form = SupplierForm(instance=supplier)
     return render(request, 'stock/supplier_form.html', {
         'form': form, 'title': f'Modifier: {supplier.name}'
+    })
+
+
+@login_required
+def stock_adjust_unit(request, pk):
+    """Adjust status / prices of a single ProductUnit and log the movement."""
+    unit = get_object_or_404(ProductUnit, pk=pk)
+    old_status = unit.status
+
+    if request.method == 'POST':
+        form = StockAdjustmentForm(request.POST, instance=unit)
+        if form.is_valid():
+            unit = form.save()
+            reason = form.cleaned_data.get('reason', '')
+            # Log as StockMovement (adjustment)
+            StockMovement.objects.create(
+                product_unit=unit,
+                movement_type='adjustment',
+                reason=reason or f'Statut: {old_status} → {unit.status}',
+                performed_by=request.user,
+            )
+            messages.success(request, f'Unité {unit.imei_serial} mise à jour avec succès.')
+            return redirect('products:unit_detail', pk=unit.pk)
+    else:
+        form = StockAdjustmentForm(instance=unit)
+
+    return render(request, 'stock/adjust_unit.html', {
+        'form': form,
+        'unit': unit,
+        'title': f'Ajustement — {unit.product} ({unit.imei_serial})'
     })

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block page_title_top %}Supprimer une Unité{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Confirmer la Suppression</h2>
+    <a href="{% url 'products:unit_detail' unit.pk %}" class="btn-view">
+        <i class="fas fa-arrow-left"></i> Annuler
+    </a>
+</div>
+
+<div class="card" style="max-width:550px; margin:0 auto; text-align:center;">
+    <div class="card-body" style="padding:40px;">
+
+        <div style="width:80px; height:80px; background:#FEF2F2; border-radius:50%;
+                    display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+            <i class="fas fa-trash-alt" style="font-size:2rem; color:#EF4444;"></i>
+        </div>
+
+        <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:12px; color:var(--text-main);">
+            Supprimer cette unité ?
+        </h3>
+        <p style="color:var(--text-muted); margin-bottom:8px;">
+            Vous êtes sur le point de supprimer définitivement :
+        </p>
+        <div style="background:#F8FAFC; border-radius:12px; padding:16px; margin:16px 0; text-align:left;">
+            <p><strong>Produit :</strong> {{ unit.product }}</p>
+            <p><strong>IMEI / Série :</strong> <code>{{ unit.imei_serial }}</code></p>
+            <p><strong>État :</strong> {{ unit.get_condition_display }}</p>
+            <p><strong>Statut actuel :</strong> {{ unit.get_status_display }}</p>
+        </div>
+
+        <div style="background:#FFF7ED; border:1px solid #FED7AA; border-radius:10px; padding:12px; margin-bottom:24px;">
+            <p style="color:#92400E; font-size:.85rem; font-weight:600;">
+                <i class="fas fa-triangle-exclamation"></i>
+                Cette action est <strong>irréversible</strong>. Tout l'historique lié à cette unité sera également supprimé.
+            </p>
+        </div>
+
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="padding:14px 32px; background:#EF4444; color:white;
+                    border:none; border-radius:12px; font-weight:800; cursor:pointer; font-size:1rem;
+                    transition:background .2s;"
+                    onmouseover="this.style.background='#DC2626'"
+                    onmouseout="this.style.background='#EF4444'">
+                <i class="fas fa-trash-alt"></i> Oui, supprimer définitivement
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

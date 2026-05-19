@@ -3,7 +3,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Fiche de Dépôt #{{ repair.id }} - SEN GLOBAL BUSINESS</title>
+    <title>Fiche de Dépôt #{{ repair.id }} - SEN TERANGA BUSINESS</title>
     <style>
         body { font-family: 'Inter', sans-serif; padding: 20px; color: #333; font-size: 14px; }
         .ticket { width: 100%; max-width: 800px; margin: 0 auto; border: 1px solid #eee; padding: 30px; border-radius: 10px; }
@@ -22,7 +22,13 @@
 
 <div class="ticket">
     <div class="header">
-        <div class="logo">SEN GLOBAL BUSINESS<br><span style="font-size:12px;color:#666;">Dakar, Sénégal - Tél: 77 792 40 65</span></div>
+        <div class="logo" style="display:flex; align-items:center; gap:12px;">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+            <div>
+                SEN TERANGA BUSINESS<br>
+                <span style="font-size:12px;color:#666;">Dakar, Sénégal - Tél: +221 77 347 70 88</span>
+            </div>
+        </div>
         <div style="text-align:right;">
             <h2 style="margin:0;">FICHE DE DÉPÔT</h2>
             <p style="margin:5px 0;">N° #{{ repair.id }}</p>
@@ -53,7 +59,7 @@
 
     <div class="conditions">
         <strong>Conditions Générales :</strong><br>
-        1. SEN GLOBAL BUSINESS n'est pas responsable de la perte de données. Veuillez effectuer une sauvegarde avant le dépôt.<br>
+        1. SEN TERANGA BUSINESS n'est pas responsable de la perte de données. Veuillez effectuer une sauvegarde avant le dépôt.<br>
         2. Tout appareil non récupéré après 3 mois sera considéré comme abandonné.<br>
         3. La garantie SAV ne couvre que la pièce remplacée.<br>
         4. Aucun appareil ne sera rendu sans présentation de cette fiche.

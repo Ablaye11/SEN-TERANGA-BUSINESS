@@ -14,5 +14,6 @@ urlpatterns = [
     path('units/add/<int:product_pk>/', views.unit_create, name='unit_create_for_product'),
     path('units/<int:pk>/', views.unit_detail, name='unit_detail'),
     path('units/<int:pk>/edit/', views.unit_edit, name='unit_edit'),
+    path('units/<int:pk>/delete/', views.unit_delete, name='unit_delete'),
     path('trace/', views.trace_device, name='trace'),
 ]

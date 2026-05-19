@@ -25,8 +25,12 @@ def client_list(request):
 def client_detail(request, pk):
     client = get_object_or_404(Client, pk=pk)
     sales = client.sales.all()[:20]
+    repairs = client.repairs.all()[:20]
     return render(request, 'clients/client_detail.html', {
-        'client': client, 'sales': sales
+        'client': client,
+        'sales': sales,
+        'repairs': repairs,
+        'total_debt': client.credit_balance,
     })
 
 

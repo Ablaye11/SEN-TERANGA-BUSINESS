@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SEN GLOBAL BUSINESS{% endblock %}</title>
+    <title>{% block title %}SEN TERANGA BUSINESS{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -18,10 +18,10 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-globe"></i>
+            <div class="sidebar-logo" style="display:flex; align-items:center; gap:12px;">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.1);">
                 <div>
-                    SEN GLOBAL
+                    SEN TERANGA
                     <span>BUSINESS</span>
                 </div>
             </div>
@@ -42,11 +42,14 @@
             <a href="{% url 'products:list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
                 <i class="fas fa-mobile-screen-button"></i> Catalogue Produits
             </a>
-            <a href="{% url 'stock:overview' %}" class="nav-link {% if request.resolver_match.app_name == 'stock' %}active{% endif %}">
+            <a href="{% url 'stock:overview' %}" class="nav-link {% if request.resolver_match.app_name == 'stock' and request.resolver_match.url_name != 'supplier_list' and request.resolver_match.url_name != 'supplier_create' and request.resolver_match.url_name != 'supplier_edit' %}active{% endif %}">
                 <i class="fas fa-boxes-stacked"></i> Gestion Stock
                 {% if low_stock_count > 0 %}
                 <span class="nav-badge" style="background:#EF4444;">{{ low_stock_count }}</span>
                 {% endif %}
+            </a>
+            <a href="{% url 'stock:supplier_list' %}" class="nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_edit' %}active{% endif %}">
+                <i class="fas fa-truck"></i> Fournisseurs
             </a>
             <a href="{% url 'clients:list' %}" class="nav-link {% if request.resolver_match.app_name == 'clients' %}active{% endif %}">
                 <i class="fas fa-user-group"></i> Clients

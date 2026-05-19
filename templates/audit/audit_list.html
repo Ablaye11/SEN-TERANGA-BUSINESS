@@ -35,7 +35,7 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td style="color:var(--text-muted); font-size:0.85rem;">{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                    <td style="color:var(--text-muted); font-size:0.85rem;">{{ log.created_at|date:"d/m/Y H:i:s" }}</td>
                     <td>
                         <div style="display:flex; align-items:center; gap:10px;">
                             <div class="user-avatar" style="width:25px; height:25px; font-size:0.6rem;">{{ log.user.username|truncatechars:1|upper }}</div>

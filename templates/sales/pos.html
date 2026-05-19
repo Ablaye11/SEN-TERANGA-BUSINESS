@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% block title %}Caisse - SEN GLOBAL{% endblock %}
+{% block title %}Caisse - SEN TERANGA{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -159,6 +159,19 @@ const csrfToken = '{{ csrf_token }}';
 // Search & Filter
 document.getElementById('posSearch').addEventListener('input', (e) => {
     searchUnits(e.target.value);
+});
+
+// Barcode Scanner Integration: Auto-add to cart on Enter if exactly one match
+document.getElementById('posSearch').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const cards = document.querySelectorAll('#searchResults .pos-card');
+        if (cards.length === 1) {
+            cards[0].click(); // Automatically trigger add to cart
+            e.target.value = ''; // Clear for next scan
+            searchUnits(''); // Reset display
+        }
+    }
 });
 
 function filterCategory(cat) {

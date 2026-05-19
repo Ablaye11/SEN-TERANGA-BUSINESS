@@ -1,33 +1,51 @@
 {% extends 'base.html' %}
-{% block page_title %}Fournisseurs{% endblock %}
+{% block page_title_top %}Fournisseurs{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-3">
-    <h2>Liste des Fournisseurs</h2>
-    <a href="{% url 'stock:supplier_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Nouveau Fournisseur</a>
+<div class="page-header">
+    <h2 style="font-family:'Outfit';">Gestion des Fournisseurs</h2>
+    <a href="{% url 'stock:supplier_create' %}" class="btn-new-prod"><i class="fas fa-plus"></i> Nouveau Fournisseur</a>
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h2>Vos Partenaires & Fournisseurs</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Liste des contacts pour l'approvisionnement des stocks.</p>
+    </div>
     <div class="card-body" style="padding:0;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Nom</th>
+                    <th style="padding-left:25px;">Nom / Entreprise</th>
                     <th>Téléphone</th>
                     <th>Email</th>
-                    <th>Actions</th>
+                    <th style="text-align: right; padding-right:25px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for supplier in suppliers %}
                 <tr>
-                    <td><strong>{{ supplier.name }}</strong></td>
-                    <td>{{ supplier.phone|default:"-" }}</td>
-                    <td>{{ supplier.email|default:"-" }}</td>
-                    <td><a href="{% url 'stock:supplier_edit' supplier.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> Modifier</a></td>
+                    <td style="padding-left:25px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="background:#FEF2F2; color:var(--primary); width:35px; height:35px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <strong>{{ supplier.name }}</strong>
+                        </div>
+                    </td>
+                    <td><span style="font-weight:600; color:var(--text-main);">{{ supplier.phone|default:"-" }}</span></td>
+                    <td><span style="color:var(--text-muted);">{{ supplier.email|default:"-" }}</span></td>
+                    <td style="text-align: right; padding-right:25px;">
+                        <a href="{% url 'stock:supplier_edit' supplier.pk %}" class="btn-view" style="padding:6px 15px; font-size:0.8rem;"><i class="fas fa-edit"></i> Modifier</a>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-center" style="padding:40px;">Aucun fournisseur enregistré</td></tr>
+                <tr>
+                    <td colspan="4" class="text-center" style="padding:60px 20px; color:var(--text-muted);">
+                        <i class="fas fa-truck" style="font-size:3rem; margin-bottom:15px; display:block; color:#E2E8F0;"></i>
+                        Aucun fournisseur enregistré pour le moment.
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -10,7 +10,17 @@ def repair_list(request):
     status_filter = request.GET.get('status')
     if status_filter:
         repairs = repairs.filter(status=status_filter)
-    return render(request, 'sav/repair_list.html', {'repairs': repairs, 'status_filter': status_filter})
+
+    from django.utils import timezone
+    month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    return render(request, 'sav/repair_list.html', {
+        'repairs': repairs,
+        'status_filter': status_filter,
+        'pending_repairs_count': Repair.objects.filter(status__in=['pending', 'diagnostic', 'repairing']).count(),
+        'ready_repairs_count': Repair.objects.filter(status='ready').count(),
+        'delivered_this_month': Repair.objects.filter(status='delivered', delivered_at__gte=month_start).count(),
+    })
 
 @login_required
 def repair_create(request):

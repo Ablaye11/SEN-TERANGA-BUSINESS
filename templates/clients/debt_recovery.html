@@ -35,7 +35,7 @@
                     <td style="font-weight:800; color:var(--primary);">{{ item.balance|intcomma }} F</td>
                     <td>
                         <div class="flex gap-2">
-                            <a href="https://wa.me/221{{ item.client.phone }}?text=Bonjour%20{{ item.client.name }},%20nous%20vous%20rappelons%20que%20vous%20avez%20un%20solde%20de%20{{ item.balance|intcomma }}%20FCFA%20chez%20SEN%20GLOBAL%20BUSINESS.%20Merci." target="_blank" class="btn-new-sale" style="padding:5px 10px; font-size:0.75rem;">
+                            <a href="https://wa.me/221{{ item.client.phone }}?text=Bonjour%20{{ item.client.name }},%20nous%20vous%20rappelons%20que%20vous%20avez%20un%20solde%20de%20{{ item.balance|intcomma }}%20FCFA%20chez%20SEN%20TERANGA%20BUSINESS.%20Merci." target="_blank" class="btn-new-sale" style="padding:5px 10px; font-size:0.75rem;">
                                 <i class="fab fa-whatsapp"></i> Rappel
                             </a>
                             <a href="{% url 'clients:detail' item.client.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-eye"></i> Voir</a>

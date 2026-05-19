@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Count
@@ -94,20 +95,7 @@ def product_edit(request, pk):
     })
 
 
-@login_required
-def product_delete(request, pk):
-    if not request.user.is_admin_user:
-        messages.error(request, "Seul l'administrateur peut supprimer des produits.")
-        return redirect('products:list')
-    
-    product = get_object_or_404(Product, pk=pk)
-    if request.method == 'POST':
-        product.is_active = False
-        product.save()
-        messages.success(request, f'Produit "{product}" supprimé.')
-        return redirect('products:list')
-    
-    return render(request, 'products/product_confirm_delete.html', {'product': product})
+
 
 
 @login_required
@@ -233,9 +221,15 @@ def unit_delete(request, pk):
     unit = get_object_or_404(ProductUnit, pk=pk)
     if not request.user.is_admin_user:
         messages.error(request, "Seul l'administrateur peut supprimer des unités.")
-        return redirect('products:detail', pk=unit.product.pk)
-    
+        return redirect('products:unit_detail', pk=pk)
+
     product_pk = unit.product.pk
-    unit.delete()
-    messages.success(request, "Unité supprimée du stock.")
-    return redirect('products:detail', pk=product_pk)
+    imei = unit.imei_serial
+
+    if request.method == 'POST':
+        unit.delete()
+        messages.success(request, f"Ünité {imei} supprimée du stock.")
+        return redirect('products:detail', pk=product_pk)
+
+    # GET → confirmation page
+    return render(request, 'products/unit_confirm_delete.html', {'unit': unit})

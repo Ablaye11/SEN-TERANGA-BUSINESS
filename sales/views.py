@@ -271,8 +271,8 @@ def export_sales_csv(request):
             s.date.strftime('%d/%m/%Y %H:%M'),
             s.client.name if s.client else 'Passager',
             s.total_amount,
-            s.discount_amount,
-            s.paid_amount,
+            s.discount,
+            s.amount_paid,
             s.get_status_display()
         ])
     return response
@@ -315,9 +315,9 @@ def sale_invoice(request, pk):
 
 
 @login_required
-def add_payment(request, sale_pk):
+def add_payment(request, pk):
     """Add a payment to an existing sale."""
-    sale = get_object_or_404(Sale, pk=sale_pk)
+    sale = get_object_or_404(Sale, pk=pk)
     
     if request.method == 'POST':
         amount = int(request.POST.get('amount', 0))
@@ -344,7 +344,7 @@ def add_payment(request, sale_pk):
         else:
             messages.error(request, 'Montant invalide.')
     
-    return redirect('sales:detail', pk=sale_pk)
+    return redirect('sales:detail', pk=pk)
 
 
 @login_required
