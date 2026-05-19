@@ -2,24 +2,111 @@
 {% block page_title_top %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:600px;">
-    <div class="card-header"><h2>{{ title }}</h2></div>
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <a href="{% url 'accounts:user_list' %}" class="btn-view" style="padding:10px;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family:'Outfit';">{{ title }}</h2>
+    </div>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <h2>Fiche Membre Personnel</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Configurez les identifiants et le niveau d'autorisation pour ce membre de votre équipe.</p>
+    </div>
     <div class="card-body">
-        <form method="post">
+        <form method="post" class="premium-form">
             {% csrf_token %}
-            {% for field in form %}
-            <div class="form-group">
-                <label class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}<small style="color:var(--danger);">{{ field.errors.0 }}</small>{% endif %}
-                {% if field.help_text %}<small style="color:var(--text-muted); display:block;">{{ field.help_text }}</small>{% endif %}
+            
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+                <div class="form-group">
+                    <label class="form-label">Nom d'Utilisateur (Identifiant)</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-user-tag"></i>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}<small style="color:var(--primary);">{{ form.username.errors.0 }}</small>{% endif %}
+                    {% if form.username.help_text %}<small style="color:var(--text-muted); display:block; font-size:0.75rem; margin-top:4px;">{{ form.username.help_text }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Rôle / Niveau d'accès</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-shield-halved"></i>
+                        {{ form.role }}
+                    </div>
+                    {% if form.role.errors %}<small style="color:var(--primary);">{{ form.role.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-address-card"></i>
+                        {{ form.first_name }}
+                    </div>
+                    {% if form.first_name.errors %}<small style="color:var(--primary);">{{ form.first_name.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nom de famille</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-address-card"></i>
+                        {{ form.last_name }}
+                    </div>
+                    {% if form.last_name.errors %}<small style="color:var(--primary);">{{ form.last_name.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Numéro de Téléphone</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-phone"></i>
+                        {{ form.phone }}
+                    </div>
+                    {% if form.phone.errors %}<small style="color:var(--primary);">{{ form.phone.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adresse Email</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-envelope"></i>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}<small style="color:var(--primary);">{{ form.email.errors.0 }}</small>{% endif %}
+                </div>
+
+                {% if form.password %}
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Mot de Passe d'Accès</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-lock"></i>
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}<small style="color:var(--primary);">{{ form.password.errors.0 }}</small>{% endif %}
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
-                <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">Annuler</a>
+
+            <div style="margin-top:40px; display:flex; justify-content: flex-end; gap:15px;">
+                <a href="{% url 'accounts:user_list' %}" class="btn-view" style="padding:15px 30px;">Annuler</a>
+                <button type="submit" class="btn-new-prod" style="padding:15px 40px;">
+                    <i class="fas fa-save"></i> Enregistrer le Compte
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .premium-form input, .premium-form select, .premium-form textarea {
+        width: 100%; border: none; background: transparent; padding: 12px;
+        outline: none; font-family: inherit; font-size: 1rem; color: var(--text-main);
+    }
+    .form-group label {
+        display: block; font-size: 0.8rem; color: #64748B; font-weight: 700;
+        margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .premium-form select {
+        cursor: pointer;
+    }
+</style>
 {% endblock %}

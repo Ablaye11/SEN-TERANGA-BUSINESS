@@ -2,34 +2,57 @@
 {% block page_title_top %}Utilisateurs & Vendeurs{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-3">
-    <h2>Gestion du Personnel</h2>
-    <a href="{% url 'accounts:user_create' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Nouvel Utilisateur</a>
+<div class="page-header">
+    <h2 style="font-family:'Outfit';">Gestion du Personnel</h2>
+    <a href="{% url 'accounts:user_create' %}" class="btn-new-prod"><i class="fas fa-user-plus"></i> Nouvel Utilisateur</a>
 </div>
 
 <div class="card">
+    <div class="card-header">
+        <h2>Membres de la Boutique</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Gérez les comptes d'accès pour vos vendeurs et vos administrateurs.</p>
+    </div>
     <div class="card-body" style="padding:0;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Utilisateur</th>
+                    <th style="padding-left:25px;">Utilisateur</th>
                     <th>Nom Complet</th>
                     <th>Rôle</th>
                     <th>Téléphone</th>
-                    <th>Actions</th>
+                    <th style="text-align: right; padding-right:25px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for u in users %}
                 <tr>
-                    <td><strong>{{ u.username }}</strong></td>
-                    <td>{{ u.get_full_name }}</td>
-                    <td>
-                        {% if u.role == 'admin' %}<span class="badge badge-success">Administrateur</span>
-                        {% else %}<span class="badge badge-info">Vendeur</span>{% endif %}
+                    <td style="padding-left:25px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="background:#EFF6FF; color:#3B82F6; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <strong style="color:var(--text-main);">{{ u.username }}</strong>
+                                <span style="display:block; font-size:0.7rem; color:var(--text-muted);">{{ u.email|default:"Pas d'email" }}</span>
+                            </div>
+                        </div>
                     </td>
-                    <td>{{ u.phone|default:"-" }}</td>
-                    <td><a href="{% url 'accounts:user_edit' u.pk %}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></a></td>
+                    <td><span style="font-weight:600; color:var(--text-main);">{{ u.get_full_name }}</span></td>
+                    <td>
+                        {% if u.role == 'admin' %}
+                        <span style="background:#FEF2F2; color:var(--primary); font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:8px;">
+                            <i class="fas fa-shield-halved"></i> Administrateur
+                        </span>
+                        {% else %}
+                        <span style="background:#F0FDF4; color:#15803D; font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:8px;">
+                            <i class="fas fa-cash-register"></i> Vendeur
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td><span style="color:var(--text-muted); font-weight:600;">{{ u.phone|default:"-" }}</span></td>
+                    <td style="text-align: right; padding-right:25px;">
+                        <a href="{% url 'accounts:user_edit' u.pk %}" class="btn-view" style="padding:6px 12px; font-size:0.8rem;"><i class="fas fa-edit"></i> Modifier</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

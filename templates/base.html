@@ -71,6 +71,10 @@
             <a href="{% url 'sales:profit_report' %}" class="nav-link {% if request.resolver_match.url_name == 'profit_report' %}active{% endif %}">
                 <i class="fas fa-chart-pie"></i> Rapport Profits
             </a>
+            <a href="{% url 'accounts:user_list' %}" class="nav-link {% if 'accounts/users' in request.path %}active{% endif %}">
+                <i class="fas fa-users-gear"></i>
+                <span>Gestion Personnel</span>
+            </a>
             <a href="{% url 'audit:log_list' %}" class="nav-link {% if 'audit/logs' in request.path %}active{% endif %}">
                 <i class="fas fa-clipboard-list"></i>
                 <span>Journal d'Activité</span>
