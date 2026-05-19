@@ -205,7 +205,7 @@ def sale_detail(request, pk):
 
 @login_required
 def profit_report(request):
-    if request.user.role != 'admin':
+    if not request.user.is_admin_user:
         messages.error(request, "Accès réservé aux administrateurs.")
         return redirect('dashboard:index')
 

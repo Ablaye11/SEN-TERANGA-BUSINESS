@@ -6,7 +6,7 @@ from .models import AuditLog
 
 @login_required
 def log_list(request):
-    if request.user.role != 'admin':
+    if not request.user.is_admin_user:
         messages.error(request, "Accès refusé.")
         return redirect('dashboard:index')
     
