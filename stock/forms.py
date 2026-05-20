@@ -17,12 +17,19 @@ class SupplierForm(forms.ModelForm):
 
 
 class StockEntryForm(forms.ModelForm):
+    supplier = forms.ModelChoiceField(
+        queryset=Supplier.objects.all(),
+        required=False,
+        empty_label="-- Sélectionner un fournisseur --",
+        label="Fournisseur",
+        widget=forms.Select(attrs={'class': 'form-input'})
+    )
+
     class Meta:
         model = StockEntry
         fields = ['reference', 'supplier', 'date', 'notes', 'total_cost']
         widgets = {
             'reference': forms.TextInput(attrs={'class': 'form-input'}),
-            'supplier': forms.Select(attrs={'class': 'form-input'}),
             'date': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
             'notes': forms.Textarea(attrs={'class': 'form-input', 'rows': 2}),
             'total_cost': forms.NumberInput(attrs={'class': 'form-input'}),

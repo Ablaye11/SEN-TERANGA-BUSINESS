@@ -86,12 +86,19 @@
 </div>
 
 <style>
-    .premium-form input, .premium-form select, .premium-form textarea {
+    .premium-form input, .premium-form textarea {
         width: 100%; border: none; background: transparent; padding: 12px;
         outline: none; font-family: inherit; font-size: 1rem; color: var(--text-main);
     }
+    .premium-form select {
+        width: 100%; border: none; background: transparent; padding: 12px;
+        outline: none; font-family: inherit; font-size: 1rem; color: var(--text-main);
+        cursor: pointer;
+    }
+    .premium-form select option {
+        background: white; color: #1E293B; padding: 10px;
+    }
     .premium-form textarea { min-height: 80px; }
-    .premium-form select { cursor: pointer; -webkit-appearance: none; appearance: none; }
     .form-group label {
         display: block; font-size: 0.8rem; color: #64748B; font-weight: 700;
         margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
