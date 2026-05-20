@@ -225,20 +225,20 @@ def profit_report(request):
             next_month = month_start + datetime.timedelta(days=32)
             month_end = next_month.replace(day=1) - datetime.timedelta(seconds=1)
 
-        sales_in_month = Sale.objects.filter(date__range=(month_start, month_end))
+        # Exclude cancelled sales from profit report
+        sales_in_month = Sale.objects.filter(
+            date__range=(month_start, month_end),
+            status__in=['completed', 'partial']
+        )
         items_in_month = SaleItem.objects.filter(sale__in=sales_in_month)
         
         revenue = sales_in_month.aggregate(total=Sum('total_amount'))['total'] or 0
-        # Profit = Sum(ItemPrice - UnitPurchasePrice)
-        # We need to handle cases where product_unit might be null (though unlikely in our logic)
+        
         profit = 0
         for item in items_in_month:
             if item.product_unit:
                 profit += (item.unit_price - item.product_unit.effective_purchase_price)
         
-        # Subtract discounts from profit? Yes, because total_amount already accounts for it.
-        # Actually, total_amount = subtotal - discount. 
-        # So profit = (Sum of margins) - (Total discounts)
         discounts = sales_in_month.aggregate(total=Sum('discount'))['total'] or 0
         net_profit = profit - discounts
 
@@ -290,7 +290,7 @@ def export_profit_csv(request):
     writer = csv.writer(response)
     writer.writerow(['Date', 'Facture', 'Total Vente', 'Coût Achat', 'Marge Net'])
     
-    sales = Sale.objects.all().order_by('-date')
+    sales = Sale.objects.exclude(status='cancelled').order_by('-date')
     for s in sales:
         writer.writerow([
             s.date.strftime('%d/%m/%Y'),
