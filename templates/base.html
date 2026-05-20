@@ -27,18 +27,15 @@
             </div>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-section-title">Principal</div>
+            <div class="nav-section-title">Accueil</div>
             <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
                 <i class="fas fa-grid-2"></i> Tableau de Bord
             </a>
             <a href="{% url 'sales:pos' %}" class="nav-link {% if request.resolver_match.url_name == 'pos' %}active{% endif %}">
-                <i class="fas fa-rocket"></i> Point de Vente <span class="nav-badge">POS</span>
+                <i class="fas fa-cash-register"></i> Point de Vente <span class="nav-badge">POS</span>
             </a>
 
-            <div class="nav-section-title">Gestion</div>
-            <a href="{% url 'sales:list' %}" class="nav-link {% if request.resolver_match.app_name == 'sales' and request.resolver_match.url_name == 'list' %}active{% endif %}">
-                <i class="fas fa-receipt"></i> Ventes & Factures
-            </a>
+            <div class="nav-section-title">Boutique</div>
             <a href="{% url 'products:list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
                 <i class="fas fa-mobile-screen-button"></i> Catalogue Produits
             </a>
@@ -51,19 +48,22 @@
             <a href="{% url 'stock:supplier_list' %}" class="nav-link {% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_create' or request.resolver_match.url_name == 'supplier_edit' %}active{% endif %}">
                 <i class="fas fa-truck"></i> Fournisseurs
             </a>
-            <a href="{% url 'clients:list' %}" class="nav-link {% if request.resolver_match.app_name == 'clients' %}active{% endif %}">
+
+            <div class="nav-section-title">Clients & Ventes</div>
+            <a href="{% url 'sales:list' %}" class="nav-link {% if request.resolver_match.app_name == 'sales' and request.resolver_match.url_name == 'list' %}active{% endif %}">
+                <i class="fas fa-receipt"></i> Ventes & Factures
+            </a>
+            <a href="{% url 'clients:list' %}" class="nav-link {% if request.resolver_match.app_name == 'clients' and request.resolver_match.url_name != 'debt_recovery' %}active{% endif %}">
                 <i class="fas fa-user-group"></i> Clients
+            </a>
+            <a href="{% url 'clients:debt_recovery' %}" class="nav-link {% if request.resolver_match.url_name == 'debt_recovery' %}active{% endif %}">
+                <i class="fas fa-hand-holding-dollar"></i> Recouvrement Dettes
             </a>
             <a href="{% url 'sav:repair_list' %}" class="nav-link {% if request.resolver_match.app_name == 'sav' %}active{% endif %}">
                 <i class="fas fa-screwdriver-wrench"></i> Atelier SAV
                 {% if pending_repairs_count > 0 %}
                 <span class="nav-badge" style="background:var(--primary);">{{ pending_repairs_count }}</span>
                 {% endif %}
-            </a>
-
-            <div class="nav-section-title">Finance & Rapports</div>
-            <a href="{% url 'clients:debt_recovery' %}" class="nav-link {% if request.resolver_match.url_name == 'debt_recovery' %}active{% endif %}">
-                <i class="fas fa-hand-holding-dollar"></i> Recouvrement Dettes
             </a>
 
             {% if request.user.is_admin_user %}

@@ -2,23 +2,99 @@
 {% block page_title_top %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:600px;">
-    <div class="card-header"><h2>{{ title }}</h2></div>
+<div class="page-header">
+    <div style="display:flex; align-items:center; gap:20px;">
+        <a href="{% url 'stock:entry_list' %}" class="btn-view" style="padding:10px;"><i class="fas fa-arrow-left"></i></a>
+        <h2 style="font-family:'Outfit';">{{ title }}</h2>
+    </div>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <h2>Fiche d'Arrivage</h2>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Enregistrez un nouvel arrivage de marchandises.</p>
+    </div>
     <div class="card-body">
-        <form method="post">
+        <form method="post" class="premium-form">
             {% csrf_token %}
-            {% for field in form %}
-            <div class="form-group">
-                <label class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}<small style="color:var(--danger);">{{ field.errors.0 }}</small>{% endif %}
+            
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+                <div class="form-group">
+                    <label class="form-label">Référence Arrivage</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-hashtag"></i>
+                        {{ form.reference }}
+                    </div>
+                    {% if form.reference.errors %}<small style="color:var(--primary);">{{ form.reference.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date d'Arrivage</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-calendar-days"></i>
+                        {{ form.date }}
+                    </div>
+                    {% if form.date.errors %}<small style="color:var(--primary);">{{ form.date.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <label class="form-label" style="margin-bottom:0;">Fournisseur</label>
+                        <a href="{% url 'stock:supplier_create' %}" style="font-size:0.75rem; color:var(--primary); font-weight:700; text-decoration:none;">
+                            <i class="fas fa-plus-circle"></i> Ajouter un fournisseur
+                        </a>
+                    </div>
+                    <div class="search-input-group">
+                        <i class="fas fa-truck"></i>
+                        {{ form.supplier }}
+                    </div>
+                    {% if form.supplier.errors %}<small style="color:var(--primary);">{{ form.supplier.errors.0 }}</small>{% endif %}
+                    {% if not form.supplier.field.queryset.exists %}
+                    <small style="color:#F59E0B; display:block; margin-top:6px; font-weight:600;">
+                        <i class="fas fa-triangle-exclamation"></i> Aucun fournisseur enregistré. <a href="{% url 'stock:supplier_create' %}" style="color:var(--primary);">Créez-en un d'abord.</a>
+                    </small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Coût Total (FCFA)</label>
+                    <div class="search-input-group">
+                        <i class="fas fa-coins"></i>
+                        {{ form.total_cost }}
+                    </div>
+                    {% if form.total_cost.errors %}<small style="color:var(--primary);">{{ form.total_cost.errors.0 }}</small>{% endif %}
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Notes / Observations</label>
+                    <div class="search-input-group" style="align-items: flex-start;">
+                        <i class="fas fa-comment-dots" style="margin-top:15px;"></i>
+                        {{ form.notes }}
+                    </div>
+                    {% if form.notes.errors %}<small style="color:var(--primary);">{{ form.notes.errors.0 }}</small>{% endif %}
+                </div>
             </div>
-            {% endfor %}
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
-                <a href="{% url 'stock:entry_list' %}" class="btn btn-secondary">Annuler</a>
+
+            <div style="margin-top:40px; display:flex; justify-content: flex-end; gap:15px;">
+                <a href="{% url 'stock:entry_list' %}" class="btn-view" style="padding:15px 30px;">Annuler</a>
+                <button type="submit" class="btn-new-prod" style="padding:15px 40px;">
+                    <i class="fas fa-save"></i> Enregistrer l'Arrivage
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .premium-form input, .premium-form select, .premium-form textarea {
+        width: 100%; border: none; background: transparent; padding: 12px;
+        outline: none; font-family: inherit; font-size: 1rem; color: var(--text-main);
+    }
+    .premium-form textarea { min-height: 80px; }
+    .premium-form select { cursor: pointer; -webkit-appearance: none; appearance: none; }
+    .form-group label {
+        display: block; font-size: 0.8rem; color: #64748B; font-weight: 700;
+        margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+</style>
 {% endblock %}
