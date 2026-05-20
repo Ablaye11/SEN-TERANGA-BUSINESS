@@ -17,12 +17,9 @@
             <i class="fas fa-print"></i> Imprimer
         </a>
         {% if request.user.is_admin_user and sale.status != 'cancelled' %}
-        <form action="{% url 'sales:cancel' sale.pk %}" method="post" onsubmit="return confirm('Annuler cette vente et retourner les articles en stock ?');" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn-view" style="color:#EF4444; border-color:#EF4444;">
-                <i class="fas fa-times-circle"></i> Annuler la Vente
-            </button>
-        </form>
+        <button type="button" onclick="document.getElementById('cancelModal').style.display='flex'" class="btn-view" style="color:#EF4444; border-color:#EF4444;">
+            <i class="fas fa-times-circle"></i> Annuler la Vente
+        </button>
         {% endif %}
     </div>
 </div>
@@ -192,4 +189,32 @@
     .amount-remaining { font-weight: 700; color: white; }
     .amount-remaining.has-debt { color: #FECACA; }
 </style>
+
+<!-- Cancel Sale Modal -->
+<div id="cancelModal" class="modal-premium" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.8); backdrop-filter:blur(5px); z-index:9999; align-items:center; justify-content:center;">
+    <div class="card" style="width:90%; max-width:450px; padding:30px; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); animation:fadeIn 0.3s ease-out;">
+        <div style="text-align:center; margin-bottom:20px;">
+            <i class="fas fa-triangle-exclamation" style="font-size:3rem; color:#EF4444; margin-bottom:15px;"></i>
+            <h2 style="font-size:1.5rem; font-weight:800; font-family:'Outfit'; color:var(--text-main); margin-bottom:10px;">Annuler la Vente ?</h2>
+            <p style="color:var(--text-muted); font-size:0.95rem; line-height:1.5;">
+                Êtes-vous sûr de vouloir annuler cette vente ? 
+                <br>
+                <strong>Les articles seront automatiquement retournés en stock.</strong>
+            </p>
+        </div>
+        
+        <form action="{% url 'sales:cancel' sale.pk %}" method="post">
+            {% csrf_token %}
+            <div style="display:flex; gap:15px; margin-top:30px;">
+                <button type="button" onclick="document.getElementById('cancelModal').style.display='none'" class="btn-view" style="flex:1; padding:12px; text-align:center; cursor:pointer;">
+                    Non, Retour
+                </button>
+                <button type="submit" class="btn-new-prod" style="flex:1; padding:12px; justify-content:center; background:#EF4444;">
+                    <i class="fas fa-trash-can"></i> Oui, Annuler
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
