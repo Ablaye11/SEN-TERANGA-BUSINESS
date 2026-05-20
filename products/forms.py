@@ -31,6 +31,9 @@ class ProductUnitForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        # warranty_months has a model default of 6, make it optional in form
+        self.fields['warranty_months'].required = False
+        self.fields['warranty_months'].initial = 6
         if user and not user.is_admin_user:
             if 'purchase_price' in self.fields:
                 self.fields['purchase_price'].widget = forms.HiddenInput()
