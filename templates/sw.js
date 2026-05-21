@@ -83,7 +83,10 @@ self.addEventListener('fetch', (event) => {
             }).catch(() => {
                 return caches.match(event.request).then((cachedResponse) => {
                     if (cachedResponse) return cachedResponse;
-                    if (url.pathname === '/sales/pos/') return caches.match('/sales/pos/');
+                    // Si c'est une requête de navigation (changement de page HTML) et qu'on est hors-ligne
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/sales/pos/');
+                    }
                 });
             })
         );
