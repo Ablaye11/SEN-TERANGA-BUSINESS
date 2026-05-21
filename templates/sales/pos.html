@@ -211,8 +211,13 @@
         </div>
         
         <div class="form-group mb-4">
-            <label class="form-label">Valeur de Reprise (FCFA)</label>
+            <label class="form-label">Valeur de Reprise (Ce que vous déduisez au client)</label>
             <input type="number" id="tradeInValue" class="search-input-group" style="width:100%; padding:10px;" value="0">
+        </div>
+        
+        <div class="form-group mb-4">
+            <label class="form-label" style="color:var(--primary);">Prix de Revente Estimé (Votre futur prix en vitrine)</label>
+            <input type="number" id="tradeInResalePrice" class="search-input-group" style="width:100%; padding:10px;" value="0">
         </div>
         
         <div style="display:flex; gap:10px;">
@@ -361,7 +366,10 @@ function addTradeIn() {
     
     const imei = document.getElementById('tradeInImei').value;
     const val = parseInt(document.getElementById('tradeInValue').value) || 0;
-    if(val <= 0) return alert('Valeur invalide');
+    const resale = parseInt(document.getElementById('tradeInResalePrice').value) || 0;
+    
+    if(val <= 0) return alert('Valeur de reprise invalide');
+    if(resale <= 0) return alert('Prix de revente invalide');
     
     tradeIns.push({
         product_id: productId,
@@ -369,7 +377,8 @@ function addTradeIn() {
         new_brand: brand,
         name: name,
         imei_serial: imei,
-        valeur: val
+        valeur: val,
+        resale_price: resale
     });
     
     closeTradeInModal();
@@ -379,6 +388,7 @@ function addTradeIn() {
     document.getElementById('tradeInNewName').value = '';
     document.getElementById('tradeInImei').value = '';
     document.getElementById('tradeInValue').value = '0';
+    document.getElementById('tradeInResalePrice').value = '0';
     
     renderCart();
 }

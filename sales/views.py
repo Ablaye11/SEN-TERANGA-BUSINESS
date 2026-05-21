@@ -130,6 +130,7 @@ def process_sale(request):
             )
             
         t_valeur = int(t_data.get('valeur', 0))
+        t_resale = int(t_data.get('resale_price', t_valeur + (t_valeur * 0.2)))
         t_imei = t_data.get('imei_serial', f"REPRISE-{timezone.now().strftime('%Y%m%d%H%M%S')}")
         
         new_unit = ProductUnit.objects.create(
@@ -138,7 +139,7 @@ def process_sale(request):
             condition='occasion',
             status='in_stock',
             purchase_price=t_valeur,
-            selling_price=t_valeur + (t_valeur * 0.2), # Default 20% margin
+            selling_price=t_resale,
             notes=f"Reprise sur facture {sale.invoice_number}"
         )
         
