@@ -226,7 +226,7 @@
 <!-- Interface (masquée à l'impression) -->
 <div class="screen-only">
     <h1>🏷️ Étiquette Thermique — {{ unit.product.get_brand_display }} {{ unit.product.name }}</h1>
-    <a href="javascript:history.back()" class="btn-back">← Retour</a>
+    <a href="#" onclick="goBack(); return false;" class="btn-back">← Retour</a>
     <button class="btn-print" onclick="window.print()">
         🖨️ Imprimer (50x30mm)
     </button>
@@ -271,6 +271,20 @@
 
 <!-- JsBarcode CDN pour générer le code-barres à partir de l'IMEI -->
 <script>
+function goBack() {
+    // Si l'onglet a été ouvert dans une nouvelle fenêtre/onglet (target="_blank")
+    const isNewTab = !document.referrer || document.referrer.indexOf(window.location.host) === -1 || window.history.length <= 1;
+    if (isNewTab || window.opener) {
+        window.close();
+        // Fallback si le navigateur bloque le window.close()
+        setTimeout(() => {
+            window.location.href = "{% url 'products:unit_detail' unit.pk %}";
+        }, 150);
+    } else {
+        window.history.back();
+    }
+}
+
 // Génération simple du code-barres SVG sans bibliothèque externe
 // Algorithme Code128 simplifié basé sur les données ASCII
 (function() {

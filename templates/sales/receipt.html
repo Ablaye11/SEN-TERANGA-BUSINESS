@@ -148,7 +148,7 @@
 
 <!-- Boutons (masqués à l'impression) -->
 <div class="screen-controls">
-    <a href="javascript:history.back()" class="btn-back-ticket">← Retour</a>
+    <a href="#" onclick="goBack(); return false;" class="btn-back-ticket">← Retour</a>
     <button class="btn-print-ticket" onclick="window.print()">🖨️ Imprimer Ticket</button>
     {% if sale.client and sale.client.phone %}
     <a href="https://wa.me/{{ sale.client.phone|cut:' '|cut:'-' }}?text=Bonjour%20{{ sale.client.name|urlencode }}%20!%20Voici%20votre%20ticket%20de%20caisse%20N°{{ sale.invoice_number }}%20de%20SEN%20TERANGA%20BUSINESS.%20Montant%20%3A%20{{ sale.total_amount }}%20FCFA.%20Merci%20pour%20votre%20confiance%20!" 
@@ -229,5 +229,20 @@
     <div>L'excellence au service de votre technologie.</div>
 </div>
 
+<script>
+function goBack() {
+    // Si l'onglet a été ouvert dans une nouvelle fenêtre/onglet (target="_blank")
+    const isNewTab = !document.referrer || document.referrer.indexOf(window.location.host) === -1 || window.history.length <= 1;
+    if (isNewTab || window.opener) {
+        window.close();
+        // Fallback si le navigateur bloque le window.close()
+        setTimeout(() => {
+            window.location.href = "{% url 'sales:detail' sale.pk %}";
+        }, 150);
+    } else {
+        window.history.back();
+    }
+}
+</script>
 </body>
 </html>
