@@ -130,13 +130,21 @@
 
             <div class="cart-summary">
                 <div class="form-group mb-3">
-                    <label class="form-label">Client</label>
+                    <label class="form-label">Client <span onclick="toggleNewClient()" style="float:right; color:var(--primary); cursor:pointer; font-weight:700;"><i class="fas fa-plus"></i> Nouveau Client</span></label>
+                    
+                    <!-- Select existing client -->
                     <select id="clientSelect" class="filter-select" style="width:100%; background:white; height:45px; border-radius:12px;">
                         <option value="">Client Passager</option>
                         {% for client in clients %}
                         <option value="{{ client.id }}">{{ client.name }}</option>
                         {% endfor %}
                     </select>
+
+                    <!-- New client fields (hidden by default) -->
+                    <div id="newClientFields" style="display:none; margin-top:10px;">
+                        <input type="text" id="newClientName" class="search-input-group" placeholder="Nom complet du client" style="width:100%; padding:10px; margin-bottom:8px; border-radius:8px;">
+                        <input type="text" id="newClientPhone" class="search-input-group" placeholder="Téléphone (ex: 77...)" style="width:100%; padding:10px; border-radius:8px;">
+                    </div>
                 </div>
                 
                 <div class="form-group mb-4">
@@ -432,6 +440,8 @@ function processSale() {
         items: cart,
         trade_ins: tradeIns,
         client_id: document.getElementById('clientSelect').value || null,
+        new_client_name: document.getElementById('newClientName') ? document.getElementById('newClientName').value.trim() : '',
+        new_client_phone: document.getElementById('newClientPhone') ? document.getElementById('newClientPhone').value.trim() : '',
         discount: discount,
         payment_method: document.getElementById('paymentMethod').value,
         payment_amount: totalToPay
@@ -454,5 +464,19 @@ function processSale() {
 
 // Initial load
 searchUnits('');
+function toggleNewClient() {
+    const sel = document.getElementById('clientSelect');
+    const fields = document.getElementById('newClientFields');
+    if (fields.style.display === 'none') {
+        fields.style.display = 'block';
+        sel.style.display = 'none';
+        sel.value = ''; // Reset select
+    } else {
+        fields.style.display = 'none';
+        sel.style.display = 'block';
+        document.getElementById('newClientName').value = '';
+        document.getElementById('newClientPhone').value = '';
+    }
+}
 </script>
 {% endblock %}

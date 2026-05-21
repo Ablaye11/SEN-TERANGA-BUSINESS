@@ -80,6 +80,8 @@ def process_sale(request):
     items = data.get('items', [])
     trade_ins = data.get('trade_ins', [])
     client_id = data.get('client_id')
+    new_client_name = data.get('new_client_name')
+    new_client_phone = data.get('new_client_phone')
     discount = int(data.get('discount', 0))
     payment_method = data.get('payment_method', 'cash')
     payment_amount = int(data.get('payment_amount', 0))
@@ -88,10 +90,15 @@ def process_sale(request):
     if not items:
         return JsonResponse({'error': 'Aucun article sélectionné'}, status=400)
     
-    # Create sale
+    # Create or get client
     client = None
     if client_id:
         client = Client.objects.filter(pk=client_id).first()
+    elif new_client_name:
+        client = Client.objects.create(
+            name=new_client_name,
+            phone=new_client_phone or ''
+        )
     
     subtotal = sum(item['price'] for item in items)
     
