@@ -3,12 +3,8 @@ Django settings for SEN TERANGA BUSINESS project.
 """
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load environment variables from .env file (si le fichier existe)
-load_dotenv(BASE_DIR / '.env', override=False)
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-sen-teranga-business-change-this-in-production-2024')
 
