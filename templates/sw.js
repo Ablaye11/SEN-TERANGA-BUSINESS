@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sen-teranga-cache-v1';
+const CACHE_NAME = 'sen-teranga-cache-v2';
 const ASSETS_TO_CACHE = [
     '/sales/pos/',
     '/static/css/style.css',
