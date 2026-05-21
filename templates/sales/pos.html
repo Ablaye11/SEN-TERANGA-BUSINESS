@@ -157,12 +157,22 @@
                 <div class="total-line" id="tradeInLine" style="display:none;"><span>Reprise Échange</span><span id="tradeInDisplay" style="color:#10B981;">-0 F</span></div>
                 <div class="total-line final"><span>TOTAL À PAYER</span><span id="totalDisplay">0 F</span></div>
 
-                <div class="form-group mt-3">
-                    <label class="form-label">Paiement</label>
+                <!-- NOUVEAU: Montant Encaissé (Paiement Partiel / Dette) -->
+                <div class="form-group mt-3 mb-2">
+                    <label class="form-label" style="color:#047857; font-weight:700;">Montant Encaissé (FCFA)</label>
+                    <input type="number" id="paymentAmountInput" class="search-input-group" style="width:100%; background:white; padding:12px; border-radius:12px; border:2px solid #34D399; font-weight:bold; font-size:1.1rem; color:#047857;">
+                    <div id="debtDisplay" style="color:var(--primary); font-size:0.85rem; font-weight:700; margin-top:5px; display:none;">
+                        Reste à payer (Dette) : <span id="debtAmount">0 F</span>
+                    </div>
+                </div>
+
+                <div class="form-group mt-2">
+                    <label class="form-label">Mode de Paiement</label>
                     <select id="paymentMethod" class="filter-select" style="width:100%; background:white;">
                         <option value="cash">Espèces</option>
                         <option value="wave">Wave / Orange Money</option>
                         <option value="virement">Virement Bancaire</option>
+                        <option value="dette">Dette Totale (Aucun paiement)</option>
                     </select>
                 </div>
 
@@ -425,17 +435,60 @@ function updateTotals() {
     }
     
     document.getElementById('totalDisplay').textContent = total.toLocaleString() + ' F';
+    
+    // Auto-fill payment amount if it's currently 0 or equal to old total
+    const paymentInput = document.getElementById('paymentAmountInput');
+    if (!paymentInput.hasAttribute('data-edited') || paymentInput.value === '') {
+        paymentInput.value = total;
+    }
+    
+    updateDebtDisplay();
+}
+
+function updateDebtDisplay() {
+    const subtotal = cart.reduce((sum, i) => sum + i.price, 0);
+    const discount = parseInt(document.getElementById('discountInput').value) || 0;
+    const tradeInTotal = tradeIns.reduce((sum, t) => sum + t.valeur, 0);
+    let total = subtotal - discount - tradeInTotal;
+    if (total < 0) total = 0;
+    
+    const paid = parseInt(document.getElementById('paymentAmountInput').value) || 0;
+    const debtDisplay = document.getElementById('debtDisplay');
+    const debtAmount = document.getElementById('debtAmount');
+    
+    if (paid < total) {
+        const debt = total - paid;
+        debtDisplay.style.display = 'block';
+        debtAmount.textContent = debt.toLocaleString() + ' F';
+    } else {
+        debtDisplay.style.display = 'none';
+    }
 }
 
 document.getElementById('discountInput').addEventListener('input', updateTotals);
+document.getElementById('paymentAmountInput').addEventListener('input', function() {
+    this.setAttribute('data-edited', 'true');
+    updateDebtDisplay();
+});
 
 function processSale() {
     if (cart.length === 0) { alert('Ajoutez au moins un article'); return; }
     const discount = parseInt(document.getElementById('discountInput').value) || 0;
+    
+    // Verify client is selected if there is debt
+    const paid = parseInt(document.getElementById('paymentAmountInput').value) || 0;
     const subtotal = cart.reduce((sum, i) => sum + i.price, 0);
     const tradeInTotal = tradeIns.reduce((sum, t) => sum + t.valeur, 0);
     let totalToPay = subtotal - discount - tradeInTotal;
     if (totalToPay < 0) totalToPay = 0;
+    
+    const clientId = document.getElementById('clientSelect').value;
+    const newClientName = document.getElementById('newClientName') ? document.getElementById('newClientName').value.trim() : '';
+    
+    if (paid < totalToPay && !clientId && !newClientName) {
+        alert("Attention : Le client n'a pas tout payé. Vous devez obligatoirement sélectionner ou créer un Client pour enregistrer cette dette.");
+        return;
+    }
     const body = {
         items: cart,
         trade_ins: tradeIns,
@@ -444,7 +497,7 @@ function processSale() {
         new_client_phone: document.getElementById('newClientPhone') ? document.getElementById('newClientPhone').value.trim() : '',
         discount: discount,
         payment_method: document.getElementById('paymentMethod').value,
-        payment_amount: totalToPay
+        payment_amount: paid
     };
     
     fetch('/sales/api/process/', {
