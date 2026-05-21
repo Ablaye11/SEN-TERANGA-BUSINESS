@@ -7,6 +7,7 @@ urlpatterns = [
     path('pos/', views.pos_view, name='pos'),
     path('api/search-units/', views.search_units, name='search_units'),
     path('api/process/', views.process_sale, name='process_sale'),
+    path('api/offline-sync-data/', views.offline_sync_data, name='offline_sync_data'),
     path('profit-report/', views.profit_report, name='profit_report'),
     path('', views.sale_list, name='list'),
     path('<int:pk>/', views.sale_detail, name='detail'),

@@ -166,9 +166,21 @@
             {% endfor %}
             
             <div class="summary-row total">
-                <span>TOTAL PAYÉ</span>
+                <span>TOTAL FACTURE</span>
                 <span>{{ sale.total_amount|intcomma }} F</span>
             </div>
+            
+            {% if sale.amount_remaining > 0 %}
+            <div class="summary-row" style="color:#DC2626; font-weight:800; font-size:1.1rem; border-top:1px dashed var(--border); padding-top:10px; margin-top:10px;">
+                <span>RESTE À PAYER (Dette)</span>
+                <span>{{ sale.amount_remaining|intcomma }} F</span>
+            </div>
+            {% else %}
+            <div class="summary-row" style="color:#10B981; font-weight:800; font-size:1.1rem; border-top:1px dashed var(--border); padding-top:10px; margin-top:10px;">
+                <span>MONTANT RÉGLÉ</span>
+                <span>{{ sale.amount_paid|intcomma }} F</span>
+            </div>
+            {% endif %}
         </div>
     </div>
 

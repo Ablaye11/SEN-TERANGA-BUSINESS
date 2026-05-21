@@ -809,3 +809,46 @@ def advanced_stats(request):
         'years': list(range(2024, today.year + 1)),
     }
     return render(request, 'sales/advanced_stats.html', context)
+
+
+@login_required
+def offline_sync_data(request):
+    """API: Export complete data for offline POS synchronization."""
+    units = ProductUnit.objects.filter(status='in_stock').select_related('product')
+    units_data = [{
+        'id': u.id,
+        'product_id': u.product.id,
+        'product_name': str(u.product),
+        'brand': u.product.brand,
+        'category': u.product.category,
+        'imei_serial': u.imei_serial,
+        'condition': u.get_condition_display(),
+        'color': u.color,
+        'storage': u.storage,
+        'price': int(u.effective_selling_price),
+        'warranty_months': u.warranty_months,
+    } for u in units]
+
+    clients = Client.objects.all().order_by('name')
+    clients_data = [{
+        'id': c.id,
+        'name': c.name,
+        'phone': c.phone,
+        'credit_balance': int(c.credit_balance),
+    } for c in clients]
+
+    products = Product.objects.filter(is_active=True).order_by('name')
+    products_data = [{
+        'id': p.id,
+        'name': p.name,
+        'brand': p.brand,
+        'brand_display': p.get_brand_display(),
+        'category': p.category,
+    } for p in products]
+
+    return JsonResponse({
+        'units': units_data,
+        'clients': clients_data,
+        'products': products_data
+    })
+

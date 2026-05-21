@@ -82,10 +82,28 @@
     <div class="pos-main">
         <!-- Search & Filter -->
         <div class="flex flex-col gap-4">
-            <div class="search-input-group" style="background: white; border-radius: 18px; padding: 5px 25px;">
-                <i class="fas fa-search" style="color:var(--primary); font-size: 1.2rem;"></i>
-                <input type="text" id="posSearch" placeholder="Modèle, IMEI ou n° de série..." style="padding: 15px; font-size: 1.1rem;" autofocus>
-                <i class="fas fa-camera" onclick="startScanner('posSearch')" style="color:var(--primary); cursor:pointer; font-size: 1.4rem;"></i>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; width:100%;">
+                <div class="search-input-group" style="background: white; border-radius: 18px; padding: 5px 25px; flex:1;">
+                    <i class="fas fa-search" style="color:var(--primary); font-size: 1.2rem;"></i>
+                    <input type="text" id="posSearch" placeholder="Modèle, IMEI ou n° de série..." style="padding: 15px; font-size: 1.1rem;" autofocus>
+                    <i class="fas fa-camera" onclick="startScanner('posSearch')" style="color:var(--primary); cursor:pointer; font-size: 1.4rem;"></i>
+                </div>
+                <!-- Status Badge -->
+                <div id="networkStatusBadge" style="display:flex; align-items:center; gap:8px; padding:12px 20px; border-radius:18px; font-weight:800; font-size:0.85rem; box-shadow:var(--shadow-premium); background: #ECFDF5; color: #047857; transition: all 0.3s; border:1px solid #10B981; white-space:nowrap;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#10B981; display:inline-block;" id="networkStatusDot"></span>
+                    <span id="networkStatusText">En Ligne</span>
+                </div>
+            </div>
+            
+            <!-- Offline Sync Banner -->
+            <div id="syncBanner" style="display:none; background:#FEF3C7; border:1px solid #F59E0B; padding:15px 25px; border-radius:18px; align-items:center; justify-content:space-between; box-shadow:var(--shadow-premium); animation:fadeIn 0.3s ease; width:100%; gap: 15px;">
+                <div style="display:flex; align-items:center; gap:12px; color:#92400E; font-weight:700; font-size:0.9rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:1.2rem; color:#F59E0B;"></i>
+                    <span>Vous avez <strong id="pendingSalesCount">0</strong> vente(s) enregistrée(s) hors-ligne.</span>
+                </div>
+                <button class="btn-new-sale" onclick="syncOfflineSales()" style="padding:8px 18px; font-size:0.8rem; background:linear-gradient(135deg, #F59E0B, #D97706); box-shadow:0 4px 14px rgba(245,158,11,0.4); border:none; margin:0;">
+                    <i class="fas fa-sync"></i> Synchroniser
+                </button>
             </div>
             
             <div class="category-bar" id="categoryBar">
@@ -244,6 +262,60 @@
         </div>
     </div>
 </div>
+
+<!-- Offline Receipt Modal -->
+<div id="offlineReceiptModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+    <div style="background:white; padding:30px; border-radius:25px; width:450px; max-width:95%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.3); border:1px solid var(--border);">
+        <div style="text-align:center; margin-bottom:20px;">
+            <i class="fas fa-circle-check" style="font-size:4rem; color:#10B981; margin-bottom:15px; display:block;"></i>
+            <h3 style="margin:0; font-size:1.4rem; font-weight:800; color:var(--text-main);">Vente Enregistrée (Hors-ligne)</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-top:5px;">Numéro provisoire : <span id="offlineReceiptNo" style="font-family:'Inter'; font-weight:700; color:var(--text-main);"></span></p>
+        </div>
+        
+        <div style="border-top:1px dashed var(--border); border-bottom:1px dashed var(--border); padding:15px 0; margin-bottom:20px; font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-muted);">Date:</span>
+                <span id="offlineReceiptDate" style="font-weight:600;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:var(--text-muted);">Client:</span>
+                <span id="offlineReceiptClient" style="font-weight:600;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--text-muted);">Paiement:</span>
+                <span id="offlineReceiptMethod" style="font-weight:600; text-transform:uppercase;"></span>
+            </div>
+        </div>
+
+        <h4 style="font-weight:800; font-size:0.9rem; margin-bottom:10px;">Articles</h4>
+        <div id="offlineReceiptItems" style="margin-bottom:20px;"></div>
+
+        <div style="background:#F8FAFC; padding:15px; border-radius:16px; margin-bottom:25px; font-size:0.9rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span>Sous-total:</span>
+                <span id="offlineReceiptSubtotal" style="font-weight:600;"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:var(--primary);">
+                <span>Remise:</span>
+                <span id="offlineReceiptDiscount" style="font-weight:600;"></span>
+            </div>
+            <div id="offlineReceiptTradeInContainer"></div>
+            <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem; border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
+                <span>Total Payé:</span>
+                <span id="offlineReceiptTotal" style="color:var(--primary);"></span>
+            </div>
+            <div id="offlineReceiptDebtLine" style="display:none; justify-content:space-between; font-weight:800; font-size:1rem; border-top:1px dashed var(--border); padding-top:8px; margin-top:8px; color:#DC2626;">
+                <span>Reste à payer (Dette):</span>
+                <span id="offlineReceiptDebt"></span>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button onclick="printOfflineReceipt()" class="pay-btn" style="flex:1; padding:12px; font-size:0.9rem; box-shadow:none; margin:0;"><i class="fas fa-print"></i> Imprimer</button>
+            <button onclick="closeOfflineReceiptModal()" class="btn-view" style="flex:1; display:flex; align-items:center; justify-content:center;">Fermer</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -253,20 +325,149 @@ let tradeIns = [];
 let currentCategory = '';
 const csrfToken = '{{ csrf_token }}';
 
+let db;
+let searchedUnits = [];
+let offlineReceiptData = null;
+
+// Initialize IndexedDB Local Database
+function initDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open('sen-teranga-db', 1);
+        req.onupgradeneeded = (e) => {
+            const database = e.target.result;
+            if (!database.objectStoreNames.contains('units')) {
+                database.createObjectStore('units', { keyPath: 'id' });
+            }
+            if (!database.objectStoreNames.contains('clients')) {
+                database.createObjectStore('clients', { keyPath: 'id' });
+            }
+            if (!database.objectStoreNames.contains('products')) {
+                database.createObjectStore('products', { keyPath: 'id' });
+            }
+            if (!database.objectStoreNames.contains('offline_sales')) {
+                database.createObjectStore('offline_sales', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+        req.onsuccess = (e) => {
+            db = e.target.result;
+            resolve(db);
+        };
+        req.onerror = (e) => reject(e.target.error);
+    });
+}
+
+// Fetch new catalog/clients from server and sync locally
+function syncOfflineDataFromServer() {
+    if (!navigator.onLine) return;
+    
+    console.log("Synchronisation du catalogue local depuis le serveur...");
+    fetch('/sales/api/offline-sync-data/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.units && data.clients && data.products) {
+                const tx = db.transaction(['units', 'clients', 'products'], 'readwrite');
+                tx.objectStore('units').clear();
+                tx.objectStore('clients').clear();
+                tx.objectStore('products').clear();
+                
+                data.units.forEach(u => tx.objectStore('units').put(u));
+                data.clients.forEach(c => tx.objectStore('clients').put(c));
+                data.products.forEach(p => tx.objectStore('products').put(p));
+                
+                tx.oncomplete = () => {
+                    console.log("Catalogue local synchronisé avec succès !");
+                    populateSelectorsFromLocal();
+                    // Perform initial blank search
+                    searchUnits(document.getElementById('posSearch').value);
+                };
+            }
+        })
+        .catch(err => console.error("Erreur de synchronisation du catalogue :", err));
+}
+
+// Populate selectors dynamically from local DB
+function populateSelectorsFromLocal() {
+    if (!db) return;
+    
+    // Clients Selector
+    const clientSelect = document.getElementById('clientSelect');
+    if (clientSelect) {
+        const selectedVal = clientSelect.value;
+        const tx = db.transaction('clients', 'readonly');
+        const store = tx.objectStore('clients');
+        store.getAll().onsuccess = (e) => {
+            const clients = e.target.result;
+            clientSelect.innerHTML = '<option value="">Client Passager</option>';
+            clients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.name} (${c.phone})`;
+                clientSelect.appendChild(opt);
+            });
+            clientSelect.value = selectedVal;
+        };
+    }
+    
+    // Trade-in products selector
+    const tradeInSelect = document.getElementById('tradeInProduct');
+    if (tradeInSelect) {
+        const selectedProductVal = tradeInSelect.value;
+        const txProd = db.transaction('products', 'readonly');
+        const storeProd = txProd.objectStore('products');
+        storeProd.getAll().onsuccess = (e) => {
+            const prods = e.target.result;
+            tradeInSelect.innerHTML = `
+                <option value="">-- Sélectionner un produit --</option>
+                ${prods.map(p => `<option value="${p.id}">${p.brand_display || p.brand} ${p.name}</option>`).join('')}
+                <option value="new" style="font-weight:bold;">+ Nouveau Modèle / Autre</option>
+            `;
+            tradeInSelect.value = selectedProductVal;
+        };
+    }
+}
+
+// Toggle Online/Offline Dynamic Badge status
+function updateOnlineStatus() {
+    const badge = document.getElementById('networkStatusBadge');
+    const dot = document.getElementById('networkStatusDot');
+    const text = document.getElementById('networkStatusText');
+    
+    if (navigator.onLine) {
+        badge.style.background = '#ECFDF5';
+        badge.style.color = '#047857';
+        badge.style.borderColor = '#10B981';
+        dot.style.background = '#10B981';
+        text.textContent = 'En Ligne';
+        
+        syncOfflineDataFromServer();
+        checkPendingSales();
+    } else {
+        badge.style.background = '#FFFBEB';
+        badge.style.color = '#B45309';
+        badge.style.borderColor = '#F59E0B';
+        dot.style.background = '#F59E0B';
+        text.textContent = 'Mode Hors-ligne Actif';
+        
+        populateSelectorsFromLocal();
+        checkPendingSales();
+        searchUnits(document.getElementById('posSearch').value);
+    }
+}
+
 // Search & Filter
 document.getElementById('posSearch').addEventListener('input', (e) => {
     searchUnits(e.target.value);
 });
 
-// Barcode Scanner Integration: Auto-add to cart on Enter if exactly one match
+// Barcode Scanner Integration
 document.getElementById('posSearch').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
         const cards = document.querySelectorAll('#searchResults .pos-card');
         if (cards.length === 1) {
-            cards[0].click(); // Automatically trigger add to cart
-            e.target.value = ''; // Clear for next scan
-            searchUnits(''); // Reset display
+            cards[0].click();
+            e.target.value = '';
+            searchUnits('');
         }
     }
 });
@@ -279,27 +480,67 @@ function filterCategory(cat) {
 }
 
 function searchUnits(query) {
-    let url = `/sales/api/search-units/?q=${encodeURIComponent(query)}`;
-    if (currentCategory) url += `&category=${currentCategory}`;
+    if (navigator.onLine) {
+        let url = `/sales/api/search-units/?q=${encodeURIComponent(query)}`;
+        if (currentCategory) url += `&category=${currentCategory}`;
 
-    fetch(url)
-        .then(r => r.json())
-        .then(data => {
-            const container = document.getElementById('searchResults');
-            if (data.units.length === 0) {
-                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding-top:50px;"><p>Aucun résultat</p></div>';
-                return;
-            }
-            container.innerHTML = data.units.map(u => `
-                <div class="pos-card" onclick='addToCart(${JSON.stringify(u)})'>
-                    <span class="badge">${u.condition}</span>
-                    <i class="fas fa-mobile-button"></i>
-                    <div class="name">${u.product_name}</div>
-                    <div class="imei">IMEI: ${u.imei_serial}</div>
-                    <div class="price">${u.price.toLocaleString()} F</div>
-                </div>
-            `).join('');
-        });
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                searchedUnits = data.units;
+                displayUnits(data.units);
+            })
+            .catch(err => {
+                console.warn("Échec requête en ligne, bascule locale IndexedDB", err);
+                searchUnitsOffline(query);
+            });
+    } else {
+        searchUnitsOffline(query);
+    }
+}
+
+function searchUnitsOffline(query) {
+    if (!db) return;
+    const tx = db.transaction('units', 'readonly');
+    const store = tx.objectStore('units');
+    store.getAll().onsuccess = (e) => {
+        let units = e.target.result;
+        if (query) {
+            const q = query.toLowerCase().trim();
+            units = units.filter(u => 
+                (u.imei_serial && u.imei_serial.toLowerCase().includes(q)) ||
+                (u.product_name && u.product_name.toLowerCase().includes(q)) ||
+                (u.brand && u.brand.toLowerCase().includes(q))
+            );
+        }
+        if (currentCategory) {
+            units = units.filter(u => u.category === currentCategory);
+        }
+        searchedUnits = units;
+        displayUnits(units);
+    };
+}
+
+function displayUnits(units) {
+    const container = document.getElementById('searchResults');
+    if (units.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding-top:50px;"><p>Aucun résultat</p></div>';
+        return;
+    }
+    container.innerHTML = units.map(u => `
+        <div class="pos-card" onclick="addToCartById(${u.id})">
+            <span class="badge">${u.condition}</span>
+            <i class="fas fa-mobile-button"></i>
+            <div class="name">${u.product_name}</div>
+            <div class="imei">IMEI: ${u.imei_serial}</div>
+            <div class="price">${u.price.toLocaleString()} F</div>
+        </div>
+    `).join('');
+}
+
+function addToCartById(unitId) {
+    const unit = searchedUnits.find(u => u.id == unitId);
+    if (unit) addToCart(unit);
 }
 
 function addToCart(unit) {
@@ -422,7 +663,7 @@ function updateTotals() {
     const tradeInTotal = tradeIns.reduce((sum, t) => sum + t.valeur, 0);
     
     let total = subtotal - discount - tradeInTotal;
-    if (total < 0) total = 0; // Prevent negative total to pay
+    if (total < 0) total = 0;
     
     document.getElementById('subtotalDisplay').textContent = subtotal.toLocaleString() + ' F';
     document.getElementById('discountDisplay').textContent = '-' + discount.toLocaleString() + ' F';
@@ -436,9 +677,8 @@ function updateTotals() {
     
     document.getElementById('totalDisplay').textContent = total.toLocaleString() + ' F';
     
-    // Auto-fill payment amount if it's currently 0 or equal to old total
     const paymentInput = document.getElementById('paymentAmountInput');
-    if (!paymentInput.hasAttribute('data-edited') || paymentInput.value === '') {
+    if (paymentInput && (!paymentInput.hasAttribute('data-edited') || paymentInput.value === '')) {
         paymentInput.value = total;
     }
     
@@ -452,53 +692,68 @@ function updateDebtDisplay() {
     let total = subtotal - discount - tradeInTotal;
     if (total < 0) total = 0;
     
-    const paid = parseInt(document.getElementById('paymentAmountInput').value) || 0;
+    const paymentInput = document.getElementById('paymentAmountInput');
+    const paid = paymentInput ? (parseInt(paymentInput.value) || 0) : 0;
     const debtDisplay = document.getElementById('debtDisplay');
     const debtAmount = document.getElementById('debtAmount');
     
-    if (paid < total) {
-        const debt = total - paid;
-        debtDisplay.style.display = 'block';
-        debtAmount.textContent = debt.toLocaleString() + ' F';
-    } else {
-        debtDisplay.style.display = 'none';
+    if (debtDisplay && debtAmount) {
+        if (paid < total) {
+            const debt = total - paid;
+            debtDisplay.style.display = 'block';
+            debtAmount.textContent = debt.toLocaleString() + ' F';
+        } else {
+            debtDisplay.style.display = 'none';
+        }
     }
 }
 
 document.getElementById('discountInput').addEventListener('input', updateTotals);
-document.getElementById('paymentAmountInput').addEventListener('input', function() {
-    this.setAttribute('data-edited', 'true');
-    updateDebtDisplay();
-});
+const payAmtInput = document.getElementById('paymentAmountInput');
+if (payAmtInput) {
+    payAmtInput.addEventListener('input', function() {
+        this.setAttribute('data-edited', 'true');
+        updateDebtDisplay();
+    });
+}
 
 function processSale() {
     if (cart.length === 0) { alert('Ajoutez au moins un article'); return; }
     const discount = parseInt(document.getElementById('discountInput').value) || 0;
     
-    // Verify client is selected if there is debt
-    const paid = parseInt(document.getElementById('paymentAmountInput').value) || 0;
+    const paid = document.getElementById('paymentAmountInput') ? (parseInt(document.getElementById('paymentAmountInput').value) || 0) : 0;
     const subtotal = cart.reduce((sum, i) => sum + i.price, 0);
     const tradeInTotal = tradeIns.reduce((sum, t) => sum + t.valeur, 0);
     let totalToPay = subtotal - discount - tradeInTotal;
     if (totalToPay < 0) totalToPay = 0;
     
-    const clientId = document.getElementById('clientSelect').value;
+    const clientSelect = document.getElementById('clientSelect');
+    const clientId = clientSelect.value;
+    const clientName = clientId ? clientSelect.options[clientSelect.selectedIndex].text : '';
     const newClientName = document.getElementById('newClientName') ? document.getElementById('newClientName').value.trim() : '';
+    const newClientPhone = document.getElementById('newClientPhone') ? document.getElementById('newClientPhone').value.trim() : '';
     
     if (paid < totalToPay && !clientId && !newClientName) {
         alert("Attention : Le client n'a pas tout payé. Vous devez obligatoirement sélectionner ou créer un Client pour enregistrer cette dette.");
         return;
     }
+    
     const body = {
         items: cart,
         trade_ins: tradeIns,
-        client_id: document.getElementById('clientSelect').value || null,
-        new_client_name: document.getElementById('newClientName') ? document.getElementById('newClientName').value.trim() : '',
-        new_client_phone: document.getElementById('newClientPhone') ? document.getElementById('newClientPhone').value.trim() : '',
+        client_id: clientId || null,
+        new_client_name: newClientName,
+        new_client_phone: newClientPhone,
         discount: discount,
         payment_method: document.getElementById('paymentMethod').value,
         payment_amount: paid
     };
+
+    // If offline, save locally
+    if (!navigator.onLine) {
+        saveOfflineSale(body, subtotal, tradeInTotal, totalToPay, clientName || newClientName || 'Client Passager');
+        return;
+    }
     
     fetch('/sales/api/process/', {
         method: 'POST',
@@ -512,24 +767,281 @@ function processSale() {
         } else {
             alert('Erreur: ' + data.error);
         }
+    })
+    .catch(err => {
+        console.warn("Échec réseau lors de la transaction. Enregistrement hors-ligne...", err);
+        saveOfflineSale(body, subtotal, tradeInTotal, totalToPay, clientName || newClientName || 'Client Passager');
     });
 }
 
-// Initial load
-searchUnits('');
+function saveOfflineSale(body, subtotal, tradeInTotal, totalToPay, clientDisplayName) {
+    if (!db) return alert("Base de données locale IndexedDB indisponible.");
+    
+    const now = new Date();
+    const offlineInvoiceNo = `HL-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+    
+    const offlineSale = {
+        ...body,
+        offline_invoice_number: offlineInvoiceNo,
+        date: now.toISOString(),
+        subtotal: subtotal,
+        trade_in_total: tradeInTotal,
+        total_to_pay: totalToPay,
+        client_name_display: clientDisplayName
+    };
+    
+    const tx = db.transaction('offline_sales', 'readwrite');
+    tx.objectStore('offline_sales').add(offlineSale);
+    
+    tx.oncomplete = () => {
+        // Show local thermal ticket modal
+        showOfflineReceiptModal(offlineSale);
+        
+        // Mark these items as sold in local DB
+        const txUnits = db.transaction('units', 'readwrite');
+        const storeUnits = txUnits.objectStore('units');
+        body.items.forEach(item => {
+            storeUnits.delete(item.unit_id);
+        });
+        
+        // Reset state
+        cart = [];
+        tradeIns = [];
+        renderCart();
+        
+        document.getElementById('discountInput').value = '0';
+        const pAmt = document.getElementById('paymentAmountInput');
+        if (pAmt) {
+            pAmt.value = '';
+            pAmt.removeAttribute('data-edited');
+        }
+        if (document.getElementById('newClientName')) document.getElementById('newClientName').value = '';
+        if (document.getElementById('newClientPhone')) document.getElementById('newClientPhone').value = '';
+        
+        checkPendingSales();
+        searchUnits(document.getElementById('posSearch').value);
+    };
+}
+
+function showOfflineReceiptModal(sale) {
+    offlineReceiptData = sale;
+    document.getElementById('offlineReceiptNo').textContent = sale.offline_invoice_number;
+    document.getElementById('offlineReceiptDate').textContent = new Date(sale.date).toLocaleString('fr-FR');
+    document.getElementById('offlineReceiptClient').textContent = sale.client_name_display;
+    document.getElementById('offlineReceiptMethod').textContent = sale.payment_method;
+    
+    document.getElementById('offlineReceiptSubtotal').textContent = sale.subtotal.toLocaleString() + ' F';
+    document.getElementById('offlineReceiptDiscount').textContent = '-' + sale.discount.toLocaleString() + ' F';
+    
+    const tradeInContainer = document.getElementById('offlineReceiptTradeInContainer');
+    if (sale.trade_ins && sale.trade_ins.length > 0) {
+        tradeInContainer.innerHTML = sale.trade_ins.map(t => `
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; color:#10B981;">
+                <span>Reprise: ${t.name} <small>(IMEI: ${t.imei_serial})</small></span>
+                <span style="font-weight:600;">-${t.valeur.toLocaleString()} F</span>
+            </div>
+        `).join('');
+    } else {
+        tradeInContainer.innerHTML = '';
+    }
+
+    document.getElementById('offlineReceiptTotal').textContent = sale.payment_amount.toLocaleString() + ' F';
+
+    const debtLine = document.getElementById('offlineReceiptDebtLine');
+    if (sale.total_to_pay > sale.payment_amount) {
+        debtLine.style.display = 'flex';
+        document.getElementById('offlineReceiptDebt').textContent = (sale.total_to_pay - sale.payment_amount).toLocaleString() + ' F';
+    } else {
+        debtLine.style.display = 'none';
+    }
+    
+    const itemsContainer = document.getElementById('offlineReceiptItems');
+    itemsContainer.innerHTML = sale.items.map(item => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.85rem;">
+            <span>${item.name} <br><small style="color:var(--text-muted); font-size:0.75rem;">IMEI: ${item.imei}</small></span>
+            <span style="font-weight:700;">${item.price.toLocaleString()} F</span>
+        </div>
+    `).join('');
+    
+    document.getElementById('offlineReceiptModal').style.display = 'flex';
+}
+
+function closeOfflineReceiptModal() {
+    document.getElementById('offlineReceiptModal').style.display = 'none';
+}
+
+function printOfflineReceipt() {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Ticket Provisoire - ${offlineReceiptData.offline_invoice_number}</title>
+            <style>
+                body { font-family: 'Courier New', monospace; padding: 20px; color: black; max-width: 300px; margin: 0 auto; font-size: 12px; }
+                .center { text-align: center; }
+                .bold { font-weight: bold; }
+                .right { text-align: right; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                th, td { text-align: left; padding: 4px 0; }
+                .border-top { border-top: 1px dashed black; }
+                .border-bottom { border-bottom: 1px dashed black; }
+                .margin-top { margin-top: 15px; }
+            </style>
+        </head>
+        <body onload="window.print(); window.close();">
+            <h2 class="center">SEN TERANGA</h2>
+            <p class="center bold">TICKET DE CAISSE PROVISOIRE<br>(Hors-ligne)</p>
+            <p class="border-top margin-top">
+                N°: ${offlineReceiptData.offline_invoice_number}<br>
+                Date: ${new Date(offlineReceiptData.date).toLocaleString('fr-FR')}<br>
+                Client: ${offlineReceiptData.client_name_display}<br>
+                Paiement: ${offlineReceiptData.payment_method.toUpperCase()}
+            </p>
+            <table class="border-top border-bottom">
+                <thead>
+                    <tr>
+                        <th>Article</th>
+                        <th class="right">Prix</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${offlineReceiptData.items.map(item => `
+                        <tr>
+                            <td>${item.name}<br><small>IMEI: ${item.imei}</small></td>
+                            <td class="right">${item.price.toLocaleString()} F</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <p class="right">
+                Sous-total: ${offlineReceiptData.subtotal.toLocaleString()} F<br>
+                Remise: -${offlineReceiptData.discount.toLocaleString()} F<br>
+                ${(offlineReceiptData.trade_ins || []).map(t => `Reprise: ${t.name} (IMEI: ${t.imei_serial}) : -${t.valeur.toLocaleString()} F<br>`).join('')}
+                ${offlineReceiptData.total_to_pay > offlineReceiptData.payment_amount ? `Total: ${offlineReceiptData.total_to_pay.toLocaleString()} F<br>` : ''}
+                <span class="bold">TOTAL PAYÉ: ${offlineReceiptData.payment_amount.toLocaleString()} F</span>
+                ${offlineReceiptData.total_to_pay > offlineReceiptData.payment_amount ? `<br><span class="bold">RESTE À PAYER: ${(offlineReceiptData.total_to_pay - offlineReceiptData.payment_amount).toLocaleString()} F</span>` : ''}
+            </p>
+            <p class="center margin-top border-top" style="padding-top:10px;">
+                Merci de votre confiance !<br>Ce ticket provisoire sera enregistré dès reconnexion.
+            </p>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function checkPendingSales() {
+    if (!db) return;
+    const tx = db.transaction('offline_sales', 'readonly');
+    const store = tx.objectStore('offline_sales');
+    store.getAll().onsuccess = (e) => {
+        const sales = e.target.result;
+        const banner = document.getElementById('syncBanner');
+        const countSpan = document.getElementById('pendingSalesCount');
+        
+        if (sales && sales.length > 0) {
+            countSpan.textContent = sales.length;
+            banner.style.display = 'flex';
+        } else {
+            banner.style.display = 'none';
+        }
+    };
+}
+
+async function syncOfflineSales() {
+    if (!navigator.onLine) {
+        alert("Vous êtes toujours hors-ligne. Veuillez rétablir votre connexion pour synchroniser.");
+        return;
+    }
+    
+    const tx = db.transaction('offline_sales', 'readonly');
+    const store = tx.objectStore('offline_sales');
+    store.getAll().onsuccess = async (e) => {
+        const sales = e.target.result;
+        if (!sales || sales.length === 0) return;
+        
+        console.log(`Début de la synchronisation de ${sales.length} ventes...`);
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const sale of sales) {
+            try {
+                const response = await fetch('/sales/api/process/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({
+                        items: sale.items,
+                        trade_ins: sale.trade_ins,
+                        client_id: sale.client_id,
+                        new_client_name: sale.new_client_name,
+                        new_client_phone: sale.new_client_phone,
+                        discount: sale.discount,
+                        payment_method: sale.payment_method,
+                        payment_amount: sale.payment_amount,
+                        notes: `Synchronisé depuis vente hors-ligne ${sale.offline_invoice_number}`
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const deleteTx = db.transaction('offline_sales', 'readwrite');
+                    deleteTx.objectStore('offline_sales').delete(sale.id);
+                    successCount++;
+                } else {
+                    console.error("Échec de synchronisation de la vente hors-ligne :", data.error);
+                    failCount++;
+                }
+            } catch (err) {
+                console.error("Erreur réseau lors de la synchro :", err);
+                failCount++;
+            }
+        }
+        
+        if (successCount > 0) {
+            alert(`${successCount} vente(s) synchronisée(s) avec succès !`);
+        }
+        if (failCount > 0) {
+            alert(`Attention : ${failCount} vente(s) n'ont pas pu être synchronisées (conflit de stock ou données invalides).`);
+        }
+        
+        checkPendingSales();
+        syncOfflineDataFromServer();
+    };
+}
+
 function toggleNewClient() {
     const sel = document.getElementById('clientSelect');
     const fields = document.getElementById('newClientFields');
     if (fields.style.display === 'none') {
         fields.style.display = 'block';
         sel.style.display = 'none';
-        sel.value = ''; // Reset select
+        sel.value = '';
     } else {
         fields.style.display = 'none';
         sel.style.display = 'block';
         document.getElementById('newClientName').value = '';
         document.getElementById('newClientPhone').value = '';
     }
+}
+
+// Network Status Listeners
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Page Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    initDB().then(() => {
+        updateOnlineStatus();
+    }).catch(err => console.error("Échec d'initialisation de la base locale IndexedDB :", err));
+});
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker enregistré avec succès ! Portée :', reg.scope))
+            .catch(err => console.error('Échec enregistrement du Service Worker :', err));
+    });
 }
 </script>
 {% endblock %}
