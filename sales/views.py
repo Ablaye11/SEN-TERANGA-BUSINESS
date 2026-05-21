@@ -564,7 +564,7 @@ def cash_register_overview(request):
         cash_sales = Payment.objects.filter(
             payment_method='cash',
             date__gte=active_session.opened_at
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        ).exclude(sale__status='cancelled').aggregate(total=Sum('amount'))['total'] or 0
         
         expenses_paid = Expense.objects.filter(
             date__gte=active_session.opened_at
@@ -642,7 +642,7 @@ def close_cash_register(request):
     cash_sales = Payment.objects.filter(
         payment_method='cash',
         date__gte=active_session.opened_at
-    ).aggregate(total=Sum('amount'))['total'] or 0
+    ).exclude(sale__status='cancelled').aggregate(total=Sum('amount'))['total'] or 0
     
     expenses_paid = Expense.objects.filter(
         date__gte=active_session.opened_at

@@ -23,7 +23,7 @@ class Client(models.Model):
     @property
     def total_purchases(self):
         """Total amount of all purchases."""
-        return self.sales.aggregate(
+        return self.sales.exclude(status='cancelled').aggregate(
             total=models.Sum('total_amount')
         )['total'] or 0
     
@@ -33,7 +33,7 @@ class Client(models.Model):
         from sales.models import Payment
         return Payment.objects.filter(
             sale__client=self
-        ).aggregate(total=models.Sum('amount'))['total'] or 0
+        ).exclude(sale__status='cancelled').aggregate(total=models.Sum('amount'))['total'] or 0
     
     @property
     def credit_balance(self):
@@ -42,8 +42,8 @@ class Client(models.Model):
     
     @property
     def purchase_count(self):
-        return self.sales.count()
+        return self.sales.exclude(status='cancelled').count()
     @property
     def is_vip(self):
         """Returns True if client has more than 5 purchases."""
-        return self.sales.count() >= 5
+        return self.purchase_count >= 5
