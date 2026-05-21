@@ -30,7 +30,7 @@
         <div class="kpi-value">{{ client.sales.count }}</div>
         <div class="kpi-sub">Ventes enregistrées</div>
     </div>
-    <div class="kpi-card" style="border-left: 4px solid var(--primary);">
+    <div class="kpi-card" style="border-left: 4px solid var(--primary); position: relative;">
         <div class="kpi-icon" style="background:#FEF2F2; color:var(--primary);"><i class="fas fa-hand-holding-dollar"></i></div>
         <div class="kpi-label">Dette Actuelle</div>
         <div class="kpi-value">{{ total_debt|intcomma }} F</div>
@@ -38,22 +38,55 @@
     </div>
 </div>
 
+{% if total_debt > 0 %}
+<div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 15px 20px; border-radius: 16px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+    <div style="display:flex; align-items:center; gap:15px;">
+        <i class="fas fa-circle-exclamation" style="color:#EF4444; font-size:1.5rem;"></i>
+        <div>
+            <h4 style="margin:0; color:#EF4444; font-weight:800; font-size:1rem;">Dette active détectée</h4>
+            <p style="margin:5px 0 0 0; font-size:0.85rem; color:var(--text-muted);">Ce client doit encore régler <strong>{{ total_debt|intcomma }} F</strong>. Cliquez sur "Régler" sur une facture ci-dessous pour enregistrer un versement.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="grid-2">
     <!-- Sales History -->
     <div class="card">
         <div class="card-header"><h2>Historique des Achats</h2></div>
         <div class="card-body" style="padding:0;">
             <table class="data-table">
-                <thead><tr><th>Date</th><th>Facture</th><th>Total</th><th>Statut</th></tr></thead>
+                <thead><tr><th>Date</th><th>Facture</th><th>Finances</th><th>Statut</th><th>Action</th></tr></thead>
                 <tbody>
                     {% for sale in sales %}
                     <tr>
                         <td>{{ sale.date|date:"d/m/Y" }}</td>
-                        <td><strong>{{ sale.invoice_number }}</strong></td>
-                        <td style="font-weight:700;">{{ sale.total_amount|intcomma }} F</td>
+                        <td><a href="{% url 'sales:detail' sale.pk %}" style="font-weight:800; color:var(--primary);">{{ sale.invoice_number }}</a></td>
                         <td>
-                            {% if sale.status == 'completed' %}<span style="color:#10B981;">Payée</span>
-                            {% else %}<span style="color:var(--primary);">Dette</span>{% endif %}
+                            <div style="font-weight:800;">Total : {{ sale.total_amount|intcomma }} F</div>
+                            {% if sale.amount_remaining > 0 %}
+                            <div style="font-size:0.75rem; color:#EF4444; font-weight:600;">Reste : {{ sale.amount_remaining|intcomma }} F</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sale.status == 'completed' %}
+                            <span class="badge-new" style="position:static; background:#DEF7EC; color:#03543F; font-size:0.7rem; padding:4px 8px;">PAYÉE</span>
+                            {% elif sale.status == 'partial' %}
+                            <span class="badge-alert" style="position:static; background:#FEF3C7; color:#92400E; font-size:0.7rem; padding:4px 8px;">PARTIEL</span>
+                            {% else %}
+                            <span class="badge-alert" style="position:static; font-size:0.7rem; padding:4px 8px;">DETTE</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sale.amount_remaining > 0 %}
+                            <a href="{% url 'sales:detail' sale.pk %}" class="btn-new-sale" style="padding:6px 12px; font-size:0.75rem; background:#10B981; border-color:#10B981; color:white; display:inline-flex; align-items:center; gap:5px; box-shadow:none;">
+                                <i class="fas fa-hand-holding-dollar"></i> Régler
+                            </a>
+                            {% else %}
+                            <a href="{% url 'sales:detail' sale.pk %}" class="btn-view" style="padding:6px 12px; font-size:0.75rem;">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

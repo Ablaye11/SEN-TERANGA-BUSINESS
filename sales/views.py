@@ -713,6 +713,10 @@ def receipt(request, pk):
 @login_required
 def advanced_stats(request):
     """Statistiques avancées avec graphiques."""
+    if not request.user.is_admin_user:
+        messages.error(request, "Accès réservé aux administrateurs.")
+        return redirect('dashboard:index')
+
     from django.db.models import Sum, Count
     from django.db.models.functions import TruncMonth, ExtractMonth
     from datetime import datetime, timedelta
