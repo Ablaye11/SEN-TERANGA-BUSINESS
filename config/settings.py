@@ -4,12 +4,11 @@ Django settings for SEN TERANGA BUSINESS project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file
-load_dotenv(BASE_DIR / '.env')
+# Load environment variables from .env file (si le fichier existe)
+load_dotenv(BASE_DIR / '.env', override=False)
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-sen-teranga-business-change-this-in-production-2024')
 
@@ -69,14 +68,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # Password validation

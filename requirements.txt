@@ -2,5 +2,4 @@ Django>=4.2,<5.0
 django-crispy-forms
 crispy-bootstrap5
 python-dotenv
-dj-database-url
 Pillow
