@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Statistiques Avancées{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 style="font-family:'Outfit';">📊 Statistiques & Rapports</h2>
+        <p style="color:var(--text-muted);">Analyse complète des performances de la boutique</p>
+    </div>
+    <div class="flex gap-2">
+        <form method="get" class="flex gap-2">
+            <select name="year" class="form-input" style="padding:10px 20px; border-radius:10px; border:1px solid var(--border); font-weight:700;" onchange="this.form.submit()">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- KPI Row -->
+<div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:30px;">
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#EFF6FF; color:#3B82F6;"><i class="fas fa-chart-line"></i></div>
+        <div class="kpi-label">CA Total {{ year }}</div>
+        <div class="kpi-value" id="kpiCaTotal">—</div>
+        <div class="kpi-sub">Neufs + Occasions</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#F0FDF4; color:#10B981;"><i class="fas fa-mobile-screen-button"></i></div>
+        <div class="kpi-label">CA Neufs</div>
+        <div class="kpi-value" id="kpiCaNeuf">—</div>
+        <div class="kpi-sub">Appareils neufs uniquement</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#FFF7ED; color:#F59E0B;"><i class="fas fa-recycle"></i></div>
+        <div class="kpi-label">CA Occasions</div>
+        <div class="kpi-value" id="kpiCaOccasion">—</div>
+        <div class="kpi-sub">Reconditionné + Occasion</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:#FEF2F2; color:#EF4444;"><i class="fas fa-hand-holding-dollar"></i></div>
+        <div class="kpi-label">Dettes Clients</div>
+        <div class="kpi-value">{{ total_debts|intcomma }} F</div>
+        <div class="kpi-sub">Solde total impayé</div>
+    </div>
+</div>
+
+<!-- Charts Row 1: CA mensuel + Top marques -->
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <h2>Chiffre d'Affaires Mensuel (Neufs vs Occasions)</h2>
+            <span class="badge-new" style="position:static;">{{ year }}</span>
+        </div>
+        <div class="card-body" style="height:350px;">
+            <canvas id="chartCA"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Top Marques Vendues</h2>
+            <i class="fas fa-trophy" style="color:#F59E0B; font-size:1.2rem;"></i>
+        </div>
+        <div class="card-body" style="height:350px;">
+            <canvas id="chartBrands"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2: Profit + Vendeurs -->
+<div class="grid-2 mt-4">
+    {% if monthly_profit %}
+    <div class="card">
+        <div class="card-header">
+            <h2>Évolution du Bénéfice Net</h2>
+            <span class="badge-new" style="position:static; background:#DEF7EC; color:#03543F;">ADMIN</span>
+        </div>
+        <div class="card-body" style="height:350px;">
+            <canvas id="chartProfit"></canvas>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Classement des Vendeurs</h2>
+            <i class="fas fa-ranking-star" style="color:var(--primary); font-size:1.2rem;"></i>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Vendeur</th>
+                        <th>Nb Ventes</th>
+                        <th>CA Généré</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in seller_stats %}
+                    <tr>
+                        <td>
+                            {% if forloop.counter == 1 %}<span style="font-size:1.3rem;">🥇</span>
+                            {% elif forloop.counter == 2 %}<span style="font-size:1.3rem;">🥈</span>
+                            {% elif forloop.counter == 3 %}<span style="font-size:1.3rem;">🥉</span>
+                            {% else %}{{ forloop.counter }}{% endif %}
+                        </td>
+                        <td><strong>{{ s.seller__first_name|default:s.seller__username }} {{ s.seller__last_name|default:"" }}</strong></td>
+                        <td>{{ s.nb_ventes }}</td>
+                        <td style="font-weight:700; color:var(--primary);">{{ s.ca_total|intcomma }} F</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-muted);">Aucune vente enregistrée pour {{ year }}.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script>
+const MONTHS = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
+const monthlyData = {{ monthly_sales|safe }};
+
+// Format numbers
+function formatF(n) {
+    return new Intl.NumberFormat('fr-FR').format(n) + ' F';
+}
+
+// KPI totals
+let totalNeuf = 0, totalOccasion = 0, totalAll = 0;
+monthlyData.forEach(m => { totalNeuf += m.neuf; totalOccasion += m.occasion; totalAll += m.total; });
+document.getElementById('kpiCaTotal').textContent = formatF(totalAll);
+document.getElementById('kpiCaNeuf').textContent = formatF(totalNeuf);
+document.getElementById('kpiCaOccasion').textContent = formatF(totalOccasion);
+
+// Chart 1: CA mensuel Neufs vs Occasions
+new Chart(document.getElementById('chartCA'), {
+    type: 'bar',
+    data: {
+        labels: MONTHS,
+        datasets: [
+            {
+                label: 'Neufs',
+                data: monthlyData.map(m => m.neuf),
+                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                borderColor: '#10B981',
+                borderWidth: 1,
+                borderRadius: 6,
+            },
+            {
+                label: 'Occasions',
+                data: monthlyData.map(m => m.occasion),
+                backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                borderColor: '#F59E0B',
+                borderWidth: 1,
+                borderRadius: 6,
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' },
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + formatF(ctx.parsed.y) } }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { callback: v => (v/1000000).toFixed(1) + 'M' } }
+        }
+    }
+});
+
+// Chart 2: Top Marques (Doughnut)
+const brandData = {{ brand_stats|safe }};
+const brandLabels = brandData.map(b => b.product__brand ? b.product__brand.toUpperCase() : 'AUTRE');
+const brandCounts = brandData.map(b => b.count);
+const brandColors = ['#C52F33','#3B82F6','#10B981','#F59E0B','#8B5CF6','#EC4899','#6366F1','#14B8A6'];
+
+new Chart(document.getElementById('chartBrands'), {
+    type: 'doughnut',
+    data: {
+        labels: brandLabels,
+        datasets: [{
+            data: brandCounts,
+            backgroundColor: brandColors.slice(0, brandLabels.length),
+            borderWidth: 2,
+            borderColor: '#fff',
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'right', labels: { font: { weight: 'bold' } } }
+        }
+    }
+});
+
+// Chart 3: Bénéfice Net (admin seulement)
+{% if monthly_profit %}
+const profitData = {{ monthly_profit|safe }};
+new Chart(document.getElementById('chartProfit'), {
+    type: 'line',
+    data: {
+        labels: MONTHS,
+        datasets: [
+            {
+                label: 'Marge Brute',
+                data: profitData.map(m => m.marge),
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59,130,246,0.1)',
+                tension: 0.4, fill: true, borderWidth: 2
+            },
+            {
+                label: 'Charges',
+                data: profitData.map(m => m.charges),
+                borderColor: '#EF4444',
+                backgroundColor: 'rgba(239,68,68,0.1)',
+                tension: 0.4, fill: true, borderWidth: 2,
+                borderDash: [5, 5]
+            },
+            {
+                label: 'Bénéfice Net',
+                data: profitData.map(m => m.net),
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16,185,129,0.15)',
+                tension: 0.4, fill: true, borderWidth: 3
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + formatF(ctx.parsed.y) } }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { callback: v => (v/1000000).toFixed(1) + 'M' } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

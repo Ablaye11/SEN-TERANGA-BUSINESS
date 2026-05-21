@@ -15,4 +15,11 @@ urlpatterns = [
     path('<int:pk>/cancel/', views.cancel_sale, name='cancel'),
     path('export/sales/', views.export_sales_csv, name='export_sales'),
     path('export/profits/', views.export_profit_csv, name='export_profits'),
+    path('expenses/', views.expense_list, name='expense_list'),
+    path('expenses/<int:pk>/delete/', views.delete_expense, name='delete_expense'),
+    path('cash-register/', views.cash_register_overview, name='cash_register_overview'),
+    path('cash-register/open/', views.open_cash_register, name='open_cash_register'),
+    path('cash-register/close/', views.close_cash_register, name='close_cash_register'),
+    path('<int:pk>/receipt/', views.receipt, name='receipt'),
+    path('stats/', views.advanced_stats, name='advanced_stats'),
 ]

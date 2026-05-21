@@ -1,0 +1,233 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket {{ sale.invoice_number }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            width: 80mm;
+            margin: 0 auto;
+            padding: 5mm 3mm;
+            font-size: 12px;
+            color: #000;
+            background: white;
+        }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .separator {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+        .double-sep {
+            border: none;
+            border-top: 2px solid #000;
+            margin: 8px 0;
+        }
+        .header-logo {
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        .header-sub {
+            font-size: 9px;
+            color: #333;
+            margin-bottom: 1px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        .item-row {
+            margin-bottom: 6px;
+        }
+        .item-name {
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .item-detail {
+            font-size: 9px;
+            color: #555;
+            margin-left: 10px;
+        }
+        .item-price {
+            text-align: right;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .total-section {
+            margin-top: 5px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        .total-row.grand {
+            font-size: 16px;
+            font-weight: 900;
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 2px solid #000;
+        }
+        .footer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 9px;
+            color: #555;
+        }
+        .footer .merci {
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 4px;
+        }
+        .whatsapp-link {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 16px;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Boutons écran */
+        .screen-controls {
+            width: 80mm;
+            margin: 0 auto 10px auto;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .screen-controls a, .screen-controls button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .btn-print-ticket {
+            background: linear-gradient(135deg, #1E293B, #334155);
+            color: white;
+        }
+        .btn-back-ticket {
+            background: #E2E8F0;
+            color: #1E293B;
+        }
+        .btn-whatsapp-send {
+            background: #25D366;
+            color: white;
+            width: 100%;
+            flex: unset;
+        }
+
+        @media print {
+            .screen-controls { display: none !important; }
+            body { padding: 0 2mm; }
+            @page { size: 80mm auto; margin: 3mm 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Boutons (masqués à l'impression) -->
+<div class="screen-controls">
+    <a href="javascript:history.back()" class="btn-back-ticket">← Retour</a>
+    <button class="btn-print-ticket" onclick="window.print()">🖨️ Imprimer Ticket</button>
+    {% if sale.client and sale.client.phone %}
+    <a href="https://wa.me/{{ sale.client.phone|cut:' '|cut:'-' }}?text=Bonjour%20{{ sale.client.name|urlencode }}%20!%20Voici%20votre%20ticket%20de%20caisse%20N°{{ sale.invoice_number }}%20de%20SEN%20TERANGA%20BUSINESS.%20Montant%20%3A%20{{ sale.total_amount }}%20FCFA.%20Merci%20pour%20votre%20confiance%20!" 
+       target="_blank" class="btn-whatsapp-send">📱 Envoyer par WhatsApp</a>
+    {% endif %}
+</div>
+
+<!-- TICKET -->
+<div class="center">
+    <div class="header-logo">SEN TERANGA BUSINESS</div>
+    <div class="header-sub">Vente de Smartphones & Informatique</div>
+    <div class="header-sub">Dakar, Sénégal</div>
+    <div class="header-sub">Tél: +221 77 347 70 88</div>
+</div>
+
+<hr class="double-sep">
+
+<div class="info-row"><span>Ticket:</span><span class="bold">#{{ sale.invoice_number }}</span></div>
+<div class="info-row"><span>Date:</span><span>{{ sale.date|date:"d/m/Y H:i" }}</span></div>
+<div class="info-row"><span>Vendeur:</span><span>{{ sale.seller.get_full_name|default:sale.seller.username }}</span></div>
+{% if sale.client %}
+<div class="info-row"><span>Client:</span><span>{{ sale.client.name }}</span></div>
+{% if sale.client.phone %}
+<div class="info-row"><span>Tél:</span><span>{{ sale.client.phone }}</span></div>
+{% endif %}
+{% else %}
+<div class="info-row"><span>Client:</span><span>Passager</span></div>
+{% endif %}
+<div class="info-row"><span>Paiement:</span><span>{{ sale.get_payment_method_display }}</span></div>
+
+<hr class="separator">
+
+{% for item in items %}
+<div class="item-row">
+    <div class="item-name">{{ item.product.brand|upper }} {{ item.product.name }}</div>
+    {% if item.product_unit %}
+    <div class="item-detail">IMEI: {{ item.product_unit.imei_serial }}</div>
+    <div class="item-detail">État: {{ item.product_unit.get_condition_display }}</div>
+    {% endif %}
+    <div class="item-price">{{ item.unit_price|intcomma }} F</div>
+</div>
+{% endfor %}
+
+<hr class="separator">
+
+<div class="total-section">
+    <div class="total-row"><span>Sous-total</span><span>{{ sale.subtotal|intcomma }} F</span></div>
+    {% if sale.discount > 0 %}
+    <div class="total-row" style="color:#C52F33;"><span>Remise</span><span>-{{ sale.discount|intcomma }} F</span></div>
+    {% endif %}
+    {% for payment in sale.payments.all %}
+        {% if payment.payment_method == 'echange' %}
+        <div class="total-row" style="color:#10B981;">
+            <span>Reprise</span>
+            <span>-{{ payment.amount|intcomma }} F</span>
+        </div>
+        {% endif %}
+    {% endfor %}
+    <div class="total-row grand">
+        <span>TOTAL</span>
+        <span>{{ sale.total_amount|intcomma }} F</span>
+    </div>
+    {% if sale.remaining_balance > 0 %}
+    <div class="total-row" style="color:#EF4444; font-weight:bold;">
+        <span>RESTE À PAYER</span>
+        <span>{{ sale.remaining_balance|intcomma }} F</span>
+    </div>
+    {% endif %}
+</div>
+
+<hr class="separator">
+
+<div class="footer">
+    <div class="merci">Merci pour votre confiance !</div>
+    <div>Garantie : {{ items.0.warranty_months|default:"6" }} mois</div>
+    <div>Présentez ce ticket pour tout SAV.</div>
+    <div style="margin-top:5px;">SEN TERANGA BUSINESS</div>
+    <div>L'excellence au service de votre technologie.</div>
+</div>
+
+</body>
+</html>

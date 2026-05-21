@@ -15,5 +15,6 @@ urlpatterns = [
     path('units/<int:pk>/', views.unit_detail, name='unit_detail'),
     path('units/<int:pk>/edit/', views.unit_edit, name='unit_edit'),
     path('units/<int:pk>/delete/', views.unit_delete, name='unit_delete'),
+    path('units/<int:pk>/print/', views.print_labels, name='print_labels'),
     path('trace/', views.trace_device, name='trace'),
 ]

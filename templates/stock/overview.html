@@ -41,7 +41,9 @@
                 <tr>
                     <th>Produit</th>
                     <th>Catégorie</th>
-                    <th>Quantité en Stock</th>
+                    <th>Stock Neuf</th>
+                    <th>Stock Occasion</th>
+                    <th>Total</th>
                     <th>Prix Moyen Vente</th>
                     <th>Statut</th>
                 </tr>
@@ -51,7 +53,9 @@
                 <tr>
                     <td><strong>{{ item.product.name }}</strong></td>
                     <td>{{ item.product.get_category_display }}</td>
-                    <td style="font-weight:700;">{{ item.count }} unité(s)</td>
+                    <td style="color:#047857; font-weight:700;">{{ item.count_neuf }}</td>
+                    <td style="color:#D97706; font-weight:700;">{{ item.count_occasion }}</td>
+                    <td style="font-weight:700;">{{ item.count }}</td>
                     <td>{{ item.product.selling_price|intcomma }} F</td>
                     <td>
                         {% if item.count <= item.product.alert_threshold %}

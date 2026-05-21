@@ -25,6 +25,11 @@
         <a href="{% url 'stock:adjust_unit' unit.pk %}" class="btn-new-prod" style="background:#F59E0B;">
             <i class="fas fa-sliders"></i> Ajuster le Stock
         </a>
+        {% if unit.status == 'in_stock' %}
+        <a href="{% url 'products:print_labels' unit.pk %}" target="_blank" class="btn-view" style="color:#6366F1; border-color:#6366F1;">
+            <i class="fas fa-barcode"></i> Imprimer Étiquette
+        </a>
+        {% endif %}
         {% if request.user.is_admin_user %}
         <a href="{% url 'products:unit_edit' unit.pk %}" class="btn-view"><i class="fas fa-edit"></i> Modifier</a>
         <a href="{% url 'products:unit_delete' unit.pk %}" class="btn-view" style="background:#FEF2F2; color:#EF4444; border:1px solid #FCA5A5;">
@@ -58,6 +63,16 @@
                 <div class="info-block">
                     <label class="form-label">Capacité / Stockage</label>
                     <p>{{ unit.storage|default:"Non spécifiée" }}</p>
+                </div>
+                <div class="info-block">
+                    <label class="form-label">Fournisseur</label>
+                    <p>
+                        {% if unit.supplier %}
+                            <strong><a href="{% url 'stock:supplier_edit' unit.supplier.pk %}" style="color:var(--primary); text-decoration:none;"><i class="fas fa-truck"></i> {{ unit.supplier.name }}</a></strong>
+                        {% else %}
+                            <span style="color:var(--text-muted); font-style:italic;">Non spécifié / Reprise</span>
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>

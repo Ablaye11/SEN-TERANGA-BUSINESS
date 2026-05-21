@@ -134,6 +134,10 @@ class ProductUnit(models.Model):
     notes = models.TextField(blank=True, verbose_name="Notes")
     added_at = models.DateTimeField(auto_now_add=True)
     sold_at = models.DateTimeField(null=True, blank=True)
+    supplier = models.ForeignKey(
+        'stock.Supplier', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='product_units', verbose_name="Fournisseur"
+    )
     
     class Meta:
         verbose_name = "Unité Produit"

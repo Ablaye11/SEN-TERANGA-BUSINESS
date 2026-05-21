@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Clôture de Caisse Journalière{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Formulaire de Clôture de Caisse</h2>
+    <div class="flex gap-2">
+        <a href="{% url 'sales:cash_register_overview' %}" class="btn-view" style="padding: 10px 20px; font-size: 0.8rem;"><i class="fas fa-arrow-left"></i> Retour</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; max-width: 1000px; margin: 0 auto;">
+
+    <!-- Left Column: Cash Register Summary Card -->
+    <div class="card" style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <div class="card-header" style="border-bottom: 1px solid #F1F5F9; padding: 20px; background: #FAF5FF; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: #6B21A8; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calculator"></i> Calculateur de Clôture
+            </h3>
+        </div>
+        <div class="card-body" style="padding: 24px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #475569; border-bottom: 1px dashed #E2E8F0; padding-bottom: 10px; margin-bottom: 15px;">DÉTAILS DES OPÉRATIONS</h4>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem;">
+                <span style="color: #64748B;">Ouvert le :</span>
+                <span style="font-weight: 600; color: #1E293B;">{{ session.opened_at|date:"d/m/Y à H:i" }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.95rem;">
+                <span style="color: #64748B;">Ouvert par :</span>
+                <span style="font-weight: 600; color: #1E293B;">{{ session.opened_by.get_full_name|default:session.opened_by.username }}</span>
+            </div>
+
+            <div style="border-top: 1px dashed #E2E8F0; padding-top: 15px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+                    <span style="color: #475569; font-weight: 500;">(+) Fond de caisse initial :</span>
+                    <span style="font-weight: 700; color: #1E293B;">{{ session.initial_cash|intcomma }} FCFA</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+                    <span style="color: #10B981; font-weight: 500;">(+) Ventes en espèces :</span>
+                    <span style="font-weight: 700; color: #10B981;">+{{ cash_sales|intcomma }} FCFA</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+                    <span style="color: #EF4444; font-weight: 500;">(-) Dépenses en espèces :</span>
+                    <span style="font-weight: 700; color: #EF4444;">-{{ expenses_paid|intcomma }} FCFA</span>
+                </div>
+            </div>
+
+            <div style="background: #EFF6FF; border-radius: 12px; padding: 18px; margin-top: 25px; border: 1px solid #BFDBFE; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #1E40AF; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Espèces Attendues</div>
+                    <div style="font-size: 0.75rem; color: #3B82F6; margin-top: 2px;">Total théorique à laisser en caisse</div>
+                </div>
+                <div style="font-size: 1.8rem; font-weight: 800; color: #1D4ED8;">{{ expected_cash|intcomma }} F</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Verification Form -->
+    <div class="card" style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <div class="card-header" style="border-bottom: 1px solid #F1F5F9; padding: 20px; background: #FFF5F5; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: #C53030; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-lock"></i> Valider la Fermeture
+            </h3>
+        </div>
+        <div class="card-body" style="padding: 24px;">
+            <form method="post" action="{% url 'sales:close_cash_register' %}" onsubmit="return confirm('Êtes-vous sûr de vouloir clôturer la caisse pour aujourd\'hui ?');">
+                {% csrf_token %}
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="actual_cash" style="display: block; font-size: 0.9rem; font-weight: 700; color: #374151; margin-bottom: 8px;">Montant Réel Compté (FCFA) *</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #94A3B8; font-size: 1.1rem;">F</span>
+                        <input type="number" id="actual_cash" name="actual_cash" required placeholder="Comptez les billets et pièces dans le tiroir" style="width: 100%; padding: 14px 12px 14px 30px; border: 2px solid var(--primary); border-radius: 8px; font-size: 1.25rem; font-weight: 800; color: #1E293B; outline: none; transition: border-color 0.2s;" oninput="calculateDifference(this.value)">
+                    </div>
+                    <small style="color: #64748B; font-size: 0.75rem; display: block; margin-top: 6px;">Veuillez recompter précisément vos espèces pour éviter tout écart injustifié.</small>
+                </div>
+
+                <!-- Difference display -->
+                <div id="differencePanel" style="display: none; border-radius: 8px; padding: 12px 15px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 700;">
+                    <span id="differenceText"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label for="notes" style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 8px;">Notes / Remarques (ex: explication d'un écart)</label>
+                    <textarea id="notes" name="notes" rows="4" placeholder="Explications s'il y a un écart de caisse, ou remarques sur la journée..." style="width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem; resize: vertical;"></textarea>
+                </div>
+
+                <button type="submit" class="btn-new-sale" style="width: 100%; padding: 15px; font-size: 1rem; border-radius: 8px; font-weight: 700; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); justify-content: center; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
+                    <i class="fas fa-lock"></i> Confirmer la Clôture de Caisse
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const expectedCash = parseInt("{{ expected_cash }}");
+
+function calculateDifference(val) {
+    const diffPanel = document.getElementById('differencePanel');
+    const diffText = document.getElementById('differenceText');
+    
+    if (!val || isNaN(val)) {
+        diffPanel.style.display = 'none';
+        return;
+    }
+    
+    const actual = parseInt(val);
+    const diff = actual - expectedCash;
+    
+    diffPanel.style.display = 'block';
+    
+    if (diff === 0) {
+        diffPanel.style.background = '#D1FAE5';
+        diffPanel.style.color = '#065F46';
+        diffText.innerHTML = '<i class="fas fa-check-circle"></i> Caisse parfaitement juste ! Écart : 0 FCFA';
+    } else if (diff > 0) {
+        diffPanel.style.background = '#DBEAFE';
+        diffPanel.style.color = '#1E40AF';
+        diffText.innerHTML = `<i class="fas fa-info-circle"></i> Excédent en caisse : +${diff.toLocaleString()} FCFA`;
+    } else {
+        diffPanel.style.background = '#FEE2E2';
+        diffPanel.style.color = '#991B1B';
+        diffText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Déficit (Perte) en caisse : ${diff.toLocaleString()} FCFA`;
+    }
+}
+</script>
+{% endblock %}

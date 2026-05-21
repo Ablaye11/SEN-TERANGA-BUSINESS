@@ -65,6 +65,12 @@
         box-shadow: 0 10px 25px rgba(197, 47, 51, 0.4); transition: all 0.2s;
     }
     .pay-btn:hover { transform: scale(1.02); box-shadow: 0 15px 35px rgba(197, 47, 51, 0.5); }
+    
+    .trade-in-item {
+        display: flex; align-items: center; gap: 15px; padding: 15px;
+        background: #ECFDF5; border-radius: 16px; margin-bottom: 15px; position: relative; border: 1px solid #34D399;
+    }
+    .trade-in-item .cart-item-remove { background: #34D399; }
 </style>
 {% endblock %}
 
@@ -111,6 +117,16 @@
             <div class="cart-body" id="cartItems">
                 <!-- Cart items list -->
             </div>
+            
+            <div id="tradeInItems" style="padding: 0 20px;">
+                <!-- Trade-in items list -->
+            </div>
+
+            <div style="padding: 0 20px 20px;">
+                <button class="btn-new-prod" style="width:100%; background:#F8FAFC; color:var(--text-main); border:1px dashed var(--border);" onclick="openTradeInModal()">
+                    <i class="fas fa-right-left"></i> Ajouter une Reprise
+                </button>
+            </div>
 
             <div class="cart-summary">
                 <div class="form-group mb-3">
@@ -130,7 +146,8 @@
 
                 <div class="total-line"><span>Sous-total</span><span id="subtotalDisplay">0 F</span></div>
                 <div class="total-line"><span>Remise</span><span id="discountDisplay" style="color:var(--primary);">-0 F</span></div>
-                <div class="total-line final"><span>TOTAL</span><span id="totalDisplay">0 F</span></div>
+                <div class="total-line" id="tradeInLine" style="display:none;"><span>Reprise Échange</span><span id="tradeInDisplay" style="color:#10B981;">-0 F</span></div>
+                <div class="total-line final"><span>TOTAL À PAYER</span><span id="totalDisplay">0 F</span></div>
 
                 <div class="form-group mt-3">
                     <label class="form-label">Paiement</label>
@@ -148,11 +165,68 @@
         </div>
     </div>
 </div>
+
+<!-- Trade-in Modal -->
+<div id="tradeInModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:20px; width:400px; max-width:90%;">
+        <h3 style="margin-top:0;"><i class="fas fa-right-left"></i> Ajouter une Reprise</h3>
+        
+        <div class="form-group mb-3 mt-4">
+            <label class="form-label">Modèle Repris</label>
+            <select id="tradeInProduct" class="filter-select" style="width:100%; height:45px;" onchange="toggleNewProductFields()">
+                <option value="">-- Sélectionner un produit --</option>
+                {% for p in products %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+                <option value="new" style="font-weight:bold;">+ Nouveau Modèle / Autre</option>
+            </select>
+        </div>
+        
+        <div id="newProductFields" style="display:none; padding:10px; background:#F8FAFC; border-radius:12px; margin-bottom:15px; border:1px dashed var(--border);">
+            <div class="form-group mb-2">
+                <label class="form-label" style="font-size:0.8rem;">Nom du Modèle</label>
+                <input type="text" id="tradeInNewName" class="search-input-group" style="width:100%; padding:8px;">
+            </div>
+            <div class="form-group">
+                <label class="form-label" style="font-size:0.8rem;">Marque</label>
+                <select id="tradeInNewBrand" class="filter-select" style="width:100%; height:35px; padding:0 10px;">
+                    <option value="apple">Apple</option>
+                    <option value="samsung">Samsung</option>
+                    <option value="xiaomi">Xiaomi</option>
+                    <option value="huawei">Huawei</option>
+                    <option value="tecno">Tecno</option>
+                    <option value="infinix">Infinix</option>
+                    <option value="itel">Itel</option>
+                    <option value="autre" selected>Autre</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group mb-3">
+            <label class="form-label">IMEI / N° Série de l'ancien téléphone</label>
+            <div style="display:flex; align-items:center; background:white; border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+                <input type="text" id="tradeInImei" style="flex:1; padding:10px; border:none; outline:none;">
+                <i class="fas fa-camera" onclick="startScanner('tradeInImei')" style="padding:10px 15px; color:var(--primary); cursor:pointer; background:#F8FAFC; border-left:1px solid var(--border);"></i>
+            </div>
+        </div>
+        
+        <div class="form-group mb-4">
+            <label class="form-label">Valeur de Reprise (FCFA)</label>
+            <input type="number" id="tradeInValue" class="search-input-group" style="width:100%; padding:10px;" value="0">
+        </div>
+        
+        <div style="display:flex; gap:10px;">
+            <button onclick="closeTradeInModal()" class="btn-view" style="flex:1;">Annuler</button>
+            <button onclick="addTradeIn()" class="btn-new-prod" style="flex:1;">Ajouter</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 let cart = [];
+let tradeIns = [];
 let currentCategory = '';
 const csrfToken = '{{ csrf_token }}';
 
@@ -233,15 +307,105 @@ function renderCart() {
         `).join('');
     }
     document.getElementById('cartCount').textContent = cart.length;
+    
+    // Render Trade-ins
+    const tContainer = document.getElementById('tradeInItems');
+    tContainer.innerHTML = tradeIns.map((item, idx) => `
+        <div class="trade-in-item">
+            <div class="cart-item-remove" onclick="removeTradeIn(${idx})"><i class="fas fa-times"></i></div>
+            <div style="flex:1;">
+                <div style="font-weight:800; font-size:0.85rem; color:#065F46;">Reprise: ${item.name}</div>
+                <div style="font-size:0.7rem; color:#047857; font-weight:600;">IMEI: ${item.imei_serial}</div>
+            </div>
+            <div style="font-weight:800; color:#10B981;">-${item.valeur.toLocaleString()} F</div>
+        </div>
+    `).join('');
+    
     updateTotals();
+}
+
+function openTradeInModal() {
+    document.getElementById('tradeInModal').style.display = 'flex';
+}
+
+function closeTradeInModal() {
+    document.getElementById('tradeInModal').style.display = 'none';
+}
+
+function toggleNewProductFields() {
+    const sel = document.getElementById('tradeInProduct');
+    const newFields = document.getElementById('newProductFields');
+    if (sel.value === 'new') {
+        newFields.style.display = 'block';
+    } else {
+        newFields.style.display = 'none';
+    }
+}
+
+function addTradeIn() {
+    const sel = document.getElementById('tradeInProduct');
+    if(!sel.value) return alert('Sélectionnez un produit');
+    
+    let name = '';
+    let brand = '';
+    let productId = null;
+    
+    if (sel.value === 'new') {
+        name = document.getElementById('tradeInNewName').value.trim();
+        brand = document.getElementById('tradeInNewBrand').value;
+        if (!name) return alert('Saisissez le nom du nouveau modèle');
+    } else {
+        name = sel.options[sel.selectedIndex].text;
+        productId = sel.value;
+    }
+    
+    const imei = document.getElementById('tradeInImei').value;
+    const val = parseInt(document.getElementById('tradeInValue').value) || 0;
+    if(val <= 0) return alert('Valeur invalide');
+    
+    tradeIns.push({
+        product_id: productId,
+        new_name: name,
+        new_brand: brand,
+        name: name,
+        imei_serial: imei,
+        valeur: val
+    });
+    
+    closeTradeInModal();
+    // Reset modal
+    sel.value = '';
+    toggleNewProductFields();
+    document.getElementById('tradeInNewName').value = '';
+    document.getElementById('tradeInImei').value = '';
+    document.getElementById('tradeInValue').value = '0';
+    
+    renderCart();
+}
+
+function removeTradeIn(idx) {
+    tradeIns.splice(idx, 1);
+    renderCart();
 }
 
 function updateTotals() {
     const subtotal = cart.reduce((sum, i) => sum + i.price, 0);
     const discount = parseInt(document.getElementById('discountInput').value) || 0;
-    const total = subtotal - discount;
+    const tradeInTotal = tradeIns.reduce((sum, t) => sum + t.valeur, 0);
+    
+    let total = subtotal - discount - tradeInTotal;
+    if (total < 0) total = 0; // Prevent negative total to pay
+    
     document.getElementById('subtotalDisplay').textContent = subtotal.toLocaleString() + ' F';
     document.getElementById('discountDisplay').textContent = '-' + discount.toLocaleString() + ' F';
+    
+    if(tradeInTotal > 0) {
+        document.getElementById('tradeInLine').style.display = 'flex';
+        document.getElementById('tradeInDisplay').textContent = '-' + tradeInTotal.toLocaleString() + ' F';
+    } else {
+        document.getElementById('tradeInLine').style.display = 'none';
+    }
+    
     document.getElementById('totalDisplay').textContent = total.toLocaleString() + ' F';
 }
 
@@ -250,12 +414,17 @@ document.getElementById('discountInput').addEventListener('input', updateTotals)
 function processSale() {
     if (cart.length === 0) { alert('Ajoutez au moins un article'); return; }
     const discount = parseInt(document.getElementById('discountInput').value) || 0;
+    const subtotal = cart.reduce((sum, i) => sum + i.price, 0);
+    const tradeInTotal = tradeIns.reduce((sum, t) => sum + t.valeur, 0);
+    let totalToPay = subtotal - discount - tradeInTotal;
+    if (totalToPay < 0) totalToPay = 0;
     const body = {
         items: cart,
+        trade_ins: tradeIns,
         client_id: document.getElementById('clientSelect').value || null,
         discount: discount,
         payment_method: document.getElementById('paymentMethod').value,
-        payment_amount: cart.reduce((sum, i) => sum + i.price, 0) - discount
+        payment_amount: totalToPay
     };
     
     fetch('/sales/api/process/', {

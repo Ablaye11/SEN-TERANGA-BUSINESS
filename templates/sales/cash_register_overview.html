@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Clôture de Caisse Journalière{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Gestion de la Caisse</h2>
+    <div class="flex gap-2">
+        <span class="topbar-date" style="font-weight: 500; font-size: 0.9rem; padding: 8px 15px; border-radius: 8px; background: rgba(0,0,0,0.03);">
+            <i class="fas fa-vault" style="color:var(--primary);"></i> Caisse de la Boutique
+        </span>
+    </div>
+</div>
+
+<!-- Active Session Status -->
+{% if active_session %}
+    <!-- Active Cash Register Drawer Panel -->
+    <div class="card" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: none; margin-bottom: 30px; color: white; overflow: hidden;">
+        <div style="background: rgba(255,255,255,0.05); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="pulse-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: #10B981; display: inline-block; box-shadow: 0 0 10px #10B981; animation: pulse 1.8s infinite;"></span>
+                <span style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8;">Session de Caisse Active</span>
+            </div>
+            <span style="font-size: 0.85rem; color: #94A3B8; font-weight: 500;">
+                <i class="far fa-clock"></i> Ouverte le {{ active_session.opened_at|date:"d/m/Y à H:i" }}
+            </span>
+        </div>
+        
+        <div style="padding: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; align-items: center;">
+            <div>
+                <div style="font-size: 0.85rem; color: #94A3B8; font-weight: 500; text-transform: uppercase;">Fond initial</div>
+                <div style="font-size: 1.6rem; font-weight: 700; margin-top: 5px; color: #F8FAFC;">{{ active_session.initial_cash|intcomma }} FCFA</div>
+                <div style="font-size: 0.8rem; color: #64748B; margin-top: 5px;">Par: {{ active_session.opened_by.username }}</div>
+            </div>
+
+            <div>
+                <div style="font-size: 0.85rem; color: #10B981; font-weight: 500; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-arrow-down"></i> Ventes Espèces
+                </div>
+                <div style="font-size: 1.6rem; font-weight: 700; margin-top: 5px; color: #10B981;">+{{ active_session.cash_sales|intcomma }} FCFA</div>
+                <div style="font-size: 0.8rem; color: #64748B; margin-top: 5px;">Entrées en espèces</div>
+            </div>
+
+            <div>
+                <div style="font-size: 0.85rem; color: #EF4444; font-weight: 500; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-arrow-up"></i> Dépenses Caisse
+                </div>
+                <div style="font-size: 1.6rem; font-weight: 700; margin-top: 5px; color: #EF4444;">-{{ active_session.expenses_paid|intcomma }} FCFA</div>
+                <div style="font-size: 0.8rem; color: #64748B; margin-top: 5px;">Sorties en espèces</div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.85rem; color: #38BDF8; font-weight: 600; text-transform: uppercase;">Espèces Attendues</div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 5px; color: #38BDF8;">{{ active_session.expected_cash|intcomma }} F</div>
+                <div style="font-size: 0.8rem; color: #94A3B8; margin-top: 5px;">Montant théorique en caisse</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.2); padding: 20px 30px; display: flex; justify-content: flex-end;">
+            <a href="{% url 'sales:close_cash_register' %}" class="btn-new-sale" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; padding: 12px 24px; font-weight: 700; border-radius: 8px; font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); border: none;">
+                <i class="fas fa-lock"></i> Clôturer la Caisse de la Journée
+            </a>
+        </div>
+    </div>
+{% else %}
+    <!-- Opening Cash Register Session Panel -->
+    <div class="card" style="background: white; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.05); padding: 40px; text-align: center; max-width: 600px; margin: 0 auto 40px auto; border-top: 5px solid var(--primary);">
+        <div style="background: #EEF2FF; color: var(--primary); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px auto;">
+            <i class="fas fa-vault"></i>
+        </div>
+        <h3 style="font-size: 1.5rem; font-weight: 700; color: #1E293B; margin-bottom: 10px;">La caisse est fermée</h3>
+        <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5;">Pour commencer à enregistrer des ventes et des opérations en espèces, veuillez ouvrir la caisse en déclarant le fond de caisse initial disponible dans le tiroir.</p>
+        
+        <form method="post" action="{% url 'sales:open_cash_register' %}" style="max-width: 400px; margin: 0 auto; text-align: left;">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="initial_cash" style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 8px;">Fond de caisse initial (FCFA)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #94A3B8; font-size: 1rem;">F</span>
+                    <input type="number" id="initial_cash" name="initial_cash" value="{{ suggested_initial }}" required style="width: 100%; padding: 12px 12px 12px 30px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 1.1rem; font-weight: 700; color: #1E293B;">
+                </div>
+                <small style="color: #94A3B8; font-size: 0.75rem; display: block; margin-top: 6px;">Suggéré (dernière clôture) : {{ suggested_initial|intcomma }} FCFA</small>
+            </div>
+            
+            <button type="submit" class="btn-new-sale" style="width: 100%; padding: 14px; font-size: 1rem; border-radius: 8px; font-weight: 700; justify-content: center; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <i class="fas fa-play"></i> Ouvrir la Caisse
+            </button>
+        </form>
+    </div>
+{% endif %}
+
+<!-- Sessions History Table -->
+<div class="card" style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+    <div class="card-header" style="border-bottom: 1px solid #F1F5F9; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.1rem; font-weight: 600; color: #1E293B;">Historique des Clôtures de Caisse</h3>
+    </div>
+    
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ouverture</th>
+                        <th>Clôture</th>
+                        <th>Responsable</th>
+                        <th>Fond Initial</th>
+                        <th>Ventes (Espèces)</th>
+                        <th>Dépenses (Espèces)</th>
+                        <th>Attendu</th>
+                        <th>Réel Déclaré</th>
+                        <th>Écart</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sess in sessions %}
+                    <tr>
+                        <td>
+                            <strong>{{ sess.opened_at|date:"d/m/Y H:i" }}</strong>
+                            <div style="font-size: 0.75rem; color: #94A3B8;">Par: {{ sess.opened_by.username }}</div>
+                        </td>
+                        <td>
+                            {% if sess.closed_at %}
+                                {{ sess.closed_at|date:"d/m/Y H:i" }}
+                                <div style="font-size: 0.75rem; color: #94A3B8;">Par: {{ sess.closed_by.username }}</div>
+                            {% else %}
+                                <span style="color: #64748B;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ sess.opened_by.get_full_name|default:sess.opened_by.username }}</td>
+                        <td style="font-weight: 600;">{{ sess.initial_cash|intcomma }} F</td>
+                        <td style="color: #10B981; font-weight: 600;">+{{ sess.cash_sales|intcomma }} F</td>
+                        <td style="color: #EF4444; font-weight: 600;">-{{ sess.expenses_paid|intcomma }} F</td>
+                        <td style="font-weight: 600; color: #475569;">{{ sess.expected_cash|intcomma }} F</td>
+                        <td style="font-weight: 700;">
+                            {% if sess.actual_cash is not None %}
+                                {{ sess.actual_cash|intcomma }} F
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sess.status == 'closed' %}
+                                {% if sess.discrepancy == 0 %}
+                                    <span class="badge-new" style="position:static; background:#D1FAE5; color:#065F46; font-weight: 700;">Juste</span>
+                                {% elif sess.discrepancy > 0 %}
+                                    <span class="badge-new" style="position:static; background:#DBEAFE; color:#1E40AF; font-weight: 700;">+{{ sess.discrepancy|intcomma }} F</span>
+                                {% else %}
+                                    <span class="badge-alert" style="position:static; background:#FEE2E2; color:#991B1B; font-weight: 700;">{{ sess.discrepancy|intcomma }} F</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #94A3B8;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sess.status == 'open' %}
+                                <span class="badge-new" style="position:static; background:#DEF7EC; color:#03543F; font-weight: 700;">OUVERTE</span>
+                            {% else %}
+                                <span class="badge-new" style="position:static; background:#F1F5F9; color:#475569; font-weight: 500;">CLÔTURÉE</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center" style="padding:40px; color: #94A3B8;">Aucune session de caisse enregistrée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+</style>
+{% endblock %}

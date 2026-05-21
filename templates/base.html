@@ -66,10 +66,21 @@
                 {% endif %}
             </a>
 
+            <div class="nav-section-title">Comptabilité & Caisse</div>
+            <a href="{% url 'sales:expense_list' %}" class="nav-link {% if request.resolver_match.url_name == 'expense_list' %}active{% endif %}">
+                <i class="fas fa-wallet"></i> Dépenses / Charges
+            </a>
+            <a href="{% url 'sales:cash_register_overview' %}" class="nav-link {% if 'cash-register' in request.path %}active{% endif %}">
+                <i class="fas fa-vault"></i> Clôture de Caisse
+            </a>
+
             {% if request.user.is_admin_user %}
             <div class="nav-section-title">Administration</div>
             <a href="{% url 'sales:profit_report' %}" class="nav-link {% if request.resolver_match.url_name == 'profit_report' %}active{% endif %}">
                 <i class="fas fa-chart-pie"></i> Rapport Profits
+            </a>
+            <a href="{% url 'sales:advanced_stats' %}" class="nav-link {% if request.resolver_match.url_name == 'advanced_stats' %}active{% endif %}">
+                <i class="fas fa-chart-column"></i> Statistiques Avancées <span class="nav-badge" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">NEW</span>
             </a>
             <a href="{% url 'accounts:user_list' %}" class="nav-link {% if 'accounts/users' in request.path %}active{% endif %}">
                 <i class="fas fa-users-gear"></i>

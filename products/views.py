@@ -233,3 +233,10 @@ def unit_delete(request, pk):
 
     # GET → confirmation page
     return render(request, 'products/unit_confirm_delete.html', {'unit': unit})
+
+
+@login_required
+def print_labels(request, pk):
+    """Génère une page d'impression d'étiquette thermique 50x30mm pour une unité."""
+    unit = get_object_or_404(ProductUnit, pk=pk)
+    return render(request, 'products/print_labels.html', {'unit': unit})

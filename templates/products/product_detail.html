@@ -74,6 +74,7 @@
             <thead>
                 <tr>
                     <th>IMEI / Série</th>
+                    <th>Fournisseur</th>
                     <th>Couleur</th>
                     <th>Capacité</th>
                     <th>État</th>
@@ -85,6 +86,7 @@
                 {% for unit in units %}
                 <tr>
                     <td><code>{{ unit.imei_serial }}</code></td>
+                    <td><span style="font-weight:600; color:var(--text-main);">{{ unit.supplier.name|default:"-" }}</span></td>
                     <td>{{ unit.color|default:"-" }}</td>
                     <td>{{ unit.storage|default:"-" }}</td>
                     <td>{{ unit.get_condition_display }}</td>
@@ -94,9 +96,12 @@
                     </td>
                     <td>
                         <div class="flex gap-2">
-                            <a href="{% url 'products:unit_detail' unit.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-eye"></i></a>
+                            <a href="{% url 'products:unit_detail' unit.pk %}" class="btn-view" style="padding:5px 10px;" title="Détails"><i class="fas fa-eye"></i></a>
+                            {% if unit.status == 'in_stock' %}
+                            <a href="{% url 'products:print_labels' unit.pk %}" target="_blank" class="btn-view" style="padding:5px 10px; color:#6366F1; border-color:#6366F1;" title="Imprimer Étiquette"><i class="fas fa-barcode"></i></a>
+                            {% endif %}
                             {% if request.user.role == 'admin' %}
-                            <a href="{% url 'products:unit_edit' unit.pk %}" class="btn-view" style="padding:5px 10px;"><i class="fas fa-edit"></i></a>
+                            <a href="{% url 'products:unit_edit' unit.pk %}" class="btn-view" style="padding:5px 10px;" title="Modifier"><i class="fas fa-edit"></i></a>
                             {% endif %}
                         </div>
                     </td>

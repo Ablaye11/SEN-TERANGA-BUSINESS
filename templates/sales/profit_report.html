@@ -11,47 +11,57 @@
 
 <div class="card">
     <div class="card-body" style="padding:0;">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Période</th>
-                    <th>Chiffre d'Affaires</th>
-                    <th>Bénéfice Net</th>
-                    <th>Marge (%)</th>
-                    <th>Graphique</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in months_data %}
-                <tr>
-                    <td><strong>{{ item.month }}</strong></td>
-                    <td style="font-weight:600;">{{ item.revenue|intcomma }} F</td>
-                    <td style="font-weight:800; color:#10B981;">{{ item.profit|intcomma }} F</td>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="flex:1; height:8px; background:#eee; border-radius:4px; overflow:hidden;">
-                                <div style="--w: {{ item.margin|floatformat:0 }}%; width: var(--w); height:100%; background:#10B981;"></div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Période</th>
+                        <th>Chiffre d'Affaires</th>
+                        <th>Marge Brute</th>
+                        <th>Charges / Dépenses</th>
+                        <th>Bénéfice Net</th>
+                        <th>Marge Réelle (%)</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in months_data %}
+                    <tr>
+                        <td><strong>{{ item.month }}</strong></td>
+                        <td style="font-weight:600;">{{ item.revenue|intcomma }} F</td>
+                        <td style="font-weight:600; color:#4B5563;">{{ item.gross_profit|intcomma }} F</td>
+                        <td style="font-weight:600; color:#EF4444;">-{{ item.expenses|intcomma }} F</td>
+                        <td style="font-weight:800; color:#10B981;">{{ item.profit|intcomma }} F</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="flex:1; height:8px; background:#E2E8F0; border-radius:4px; overflow:hidden; min-width:60px;">
+                                    <div style="--w: {{ item.margin|floatformat:0 }}%; width: var(--w); height:100%; background:#10B981;"></div>
+                                </div>
+                                <span style="font-size:0.8rem; font-weight:700; color:#065F46;">{{ item.margin|floatformat:1 }}%</span>
                             </div>
-                            <span style="font-size:0.8rem; font-weight:700;">{{ item.margin|floatformat:1 }}%</span>
-                        </div>
-                    </td>
-                    <td>
-                        {% if item.revenue > 0 %}
-                        <span class="badge badge-success">Rentable</span>
-                        {% else %}
-                        <span class="badge badge-secondary">-</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                        <td>
+                            {% if item.profit > 0 %}
+                            <span class="badge-new" style="position:static; background:#D1FAE5; color:#065F46; font-weight:700;">Rentable</span>
+                            {% elif item.profit < 0 %}
+                            <span class="badge-alert" style="position:static; background:#FEE2E2; color:#991B1B; font-weight:700;">Déficit</span>
+                            {% else %}
+                            <span class="badge-new" style="position:static; background:#F1F5F9; color:#475569;">Nul</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<div class="mt-4" style="padding:20px; background:var(--primary-bg); border-radius:15px; color:var(--primary);">
-    <i class="fas fa-info-circle"></i> 
-    <strong>Note :</strong> Le bénéfice net est calculé comme : <code>(Prix de vente - Prix d'achat) - Remises accordées</code>. 
-    Les frais fixes (loyer, électricité) ne sont pas inclus dans ce calcul.
+<div style="padding:20px; background:#EFF6FF; border-radius:15px; color:#1E40AF; display:flex; align-items:center; gap:15px; border-left:4px solid #3B82F6;">
+    <i class="fas fa-info-circle" style="font-size:1.5rem;"></i> 
+    <div>
+        <strong>Calcul du Bénéfice Net :</strong><br>
+        Le bénéfice net réel affiché est calculé comme suit : <code>(Marge brute des ventes - Remises accordées) - Dépenses opérationnelles enregistrées (Loyer, Factures, Transports, Salaires, etc.)</code>.
+    </div>
 </div>
 {% endblock %}

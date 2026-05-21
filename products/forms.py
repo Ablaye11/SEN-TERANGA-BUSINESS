@@ -41,10 +41,11 @@ class ProductUnitForm(forms.ModelForm):
 
     class Meta:
         model = ProductUnit
-        fields = ['product', 'imei_serial', 'condition', 'color', 'storage',
+        fields = ['product', 'supplier', 'imei_serial', 'condition', 'color', 'storage',
                   'purchase_price', 'selling_price', 'warranty_months', 'notes']
         widgets = {
             'product': forms.Select(attrs={'class': 'form-input'}),
+            'supplier': forms.Select(attrs={'class': 'form-input'}),
             'imei_serial': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: 353456789012345'}),
             'condition': forms.Select(attrs={'class': 'form-input'}),
             'color': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: Noir Titane'}),

@@ -66,6 +66,17 @@
                     <label style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Capacité</label>
                     <p style="font-weight:600;">{{ unit.storage|default:"-" }}</p>
                 </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Fournisseur d'Origine</label>
+                    <p style="font-weight:700;">
+                        {% if unit.supplier %}
+                            <span style="color:var(--primary);"><i class="fas fa-truck"></i> {{ unit.supplier.name }}</span>
+                            {% if unit.supplier.phone %}<span style="color:var(--text-muted); font-size:0.85rem; margin-left:10px;">📞 {{ unit.supplier.phone }}</span>{% endif %}
+                        {% else %}
+                            <span style="color:var(--text-muted); font-style:italic;">Non spécifié / Reprise client</span>
+                        {% endif %}
+                    </p>
+                </div>
             </div>
 
             <div style="margin-top:30px;">
@@ -146,7 +157,12 @@
                 {% endif %}
             </div>
 
-            <div style="margin-top:40px;">
+            <div style="margin-top:40px; display:flex; flex-direction:column; gap:12px;">
+                {% if unit.status == 'in_stock' %}
+                <a href="{% url 'products:print_labels' unit.pk %}" target="_blank" class="btn-new-prod" style="width:100%; padding:15px; justify-content:center; text-align:center; background:linear-gradient(135deg,#6366F1,#8B5CF6);">
+                    <i class="fas fa-barcode"></i> Imprimer Étiquette Thermique (50x30mm)
+                </a>
+                {% endif %}
                 <button onclick="window.print()" class="btn-view" style="width:100%; padding:15px; justify-content:center;">
                     <i class="fas fa-print"></i> Imprimer la Fiche Technique
                 </button>

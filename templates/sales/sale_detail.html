@@ -12,10 +12,19 @@
             <p style="color:var(--text-muted);">{{ sale.date|date:"l d F Y à H:i" }}</p>
         </div>
     </div>
-    <div class="flex gap-2">
+    <div class="flex gap-2" style="flex-wrap:wrap;">
         <a href="{% url 'sales:invoice' sale.pk %}" target="_blank" class="btn-new-prod" style="background:var(--text-main);">
-            <i class="fas fa-print"></i> Imprimer
+            <i class="fas fa-print"></i> Facture A4
         </a>
+        <a href="{% url 'sales:receipt' sale.pk %}" target="_blank" class="btn-view" style="color:#1E293B; border-color:#1E293B;">
+            🧾 Ticket 80mm
+        </a>
+        {% if sale.client and sale.client.phone %}
+        <a href="https://wa.me/{{ sale.client.phone|cut:' '|cut:'-' }}?text=Bonjour%20{{ sale.client.name|urlencode }}%20!%20Voici%20votre%20facture%20N°{{ sale.invoice_number }}%20de%20SEN%20TERANGA%20BUSINESS.%20Montant%20%3A%20{{ sale.total_amount }}%20FCFA.%20Merci%20!" 
+           target="_blank" class="btn-view" style="color:#25D366; border-color:#25D366;">
+            📱 WhatsApp
+        </a>
+        {% endif %}
         {% if request.user.is_admin_user and sale.status != 'cancelled' %}
         <button type="button" onclick="document.getElementById('cancelModal').style.display='flex'" class="btn-view" style="color:#EF4444; border-color:#EF4444;">
             <i class="fas fa-times-circle"></i> Annuler la Vente

@@ -14,6 +14,7 @@ class Sale(models.Model):
         ('orange_money', 'Orange Money'),
         ('virement', 'Virement Bancaire'),
         ('cheque', 'Chèque'),
+        ('echange', 'Échange / Reprise'),
         ('mixte', 'Paiement Mixte'),
     ]
     
@@ -165,6 +166,7 @@ class Payment(models.Model):
         ('orange_money', 'Orange Money'),
         ('virement', 'Virement Bancaire'),
         ('cheque', 'Chèque'),
+        ('echange', 'Échange / Reprise'),
     ]
     
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='payments')
@@ -193,3 +195,100 @@ class Payment(models.Model):
     
     def __str__(self):
         return f"{self.amount} FCFA - {self.get_payment_method_display()}"
+
+
+class Expense(models.Model):
+    """Expense/Charges model."""
+    
+    CATEGORY_CHOICES = [
+        ('rent', 'Loyer'),
+        ('transport', 'Transport'),
+        ('salary', 'Salaire'),
+        ('bills', 'Factures (Électricité, Internet, etc.)'),
+        ('other', 'Autre charge'),
+    ]
+    
+    amount = models.DecimalField(
+        max_digits=12, decimal_places=0,
+        verbose_name="Montant (FCFA)"
+    )
+    category = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES,
+        default='other', verbose_name="Catégorie"
+    )
+    description = models.TextField(blank=True, verbose_name="Description")
+    date = models.DateTimeField(default=timezone.now, verbose_name="Date")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="Enregistré par"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Dépense"
+        verbose_name_plural = "Dépenses"
+        ordering = ['-date']
+        
+    def __str__(self):
+        return f"{self.amount} FCFA - {self.get_category_display()}"
+
+
+class CashRegisterSession(models.Model):
+    """Session of cash register opening/closure."""
+    
+    STATUS_CHOICES = [
+        ('open', 'Ouverte'),
+        ('closed', 'Fermée'),
+    ]
+    
+    opened_at = models.DateTimeField(default=timezone.now, verbose_name="Date d'ouverture")
+    closed_at = models.DateTimeField(null=True, blank=True, verbose_name="Date de fermeture")
+    opened_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+        related_name='opened_sessions', verbose_name="Ouvert par"
+    )
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='closed_sessions', verbose_name="Fermé par"
+    )
+    initial_cash = models.DecimalField(
+        max_digits=12, decimal_places=0, default=0,
+        verbose_name="Fond de caisse initial (FCFA)"
+    )
+    cash_sales = models.DecimalField(
+        max_digits=12, decimal_places=0, default=0,
+        verbose_name="Ventes en espèces (FCFA)"
+    )
+    expenses_paid = models.DecimalField(
+        max_digits=12, decimal_places=0, default=0,
+        verbose_name="Dépenses en espèces (FCFA)"
+    )
+    expected_cash = models.DecimalField(
+        max_digits=12, decimal_places=0, default=0,
+        verbose_name="Espèces attendues (FCFA)"
+    )
+    actual_cash = models.DecimalField(
+        max_digits=12, decimal_places=0, null=True, blank=True,
+        verbose_name="Espèces réelles déclarées (FCFA)"
+    )
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES,
+        default='open', verbose_name="Statut"
+    )
+    notes = models.TextField(blank=True, verbose_name="Notes / Remarques")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Session de Caisse"
+        verbose_name_plural = "Sessions de Caisse"
+        ordering = ['-opened_at']
+        
+    def __str__(self):
+        status_disp = "Ouverte" if self.status == 'open' else f"Fermée le {self.closed_at.strftime('%d/%m/%Y') if self.closed_at else ''}"
+        return f"Caisse du {self.opened_at.strftime('%d/%m/%Y')} ({status_disp})"
+        
+    @property
+    def discrepancy(self):
+        if self.actual_cash is not None:
+            return self.actual_cash - self.expected_cash
+        return 0

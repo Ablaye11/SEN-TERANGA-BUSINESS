@@ -18,10 +18,16 @@ def stock_overview(request):
     low_stock_count = 0
     
     for p in products:
-        count = p.stock_count
+        in_stock_units = p.units.filter(status='in_stock')
+        count = in_stock_units.count()
+        count_neuf = in_stock_units.filter(condition='neuf').count()
+        count_occasion = count - count_neuf
+        
         product_stock.append({
             'product': p,
-            'count': count
+            'count': count,
+            'count_neuf': count_neuf,
+            'count_occasion': count_occasion
         })
         # Value = count * average purchase price (using product base purchase price for simplicity)
         total_purchase_value += (count * p.purchase_price)

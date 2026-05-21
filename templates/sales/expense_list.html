@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block page_title_top %}Gestion des Dépenses / Charges{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Gestion des Dépenses</h2>
+    <div class="flex gap-2">
+        <span class="topbar-date" style="font-weight: 500; font-size: 0.9rem; padding: 8px 15px; border-radius: 8px; background: rgba(0,0,0,0.03);">
+            <i class="fas fa-chart-line" style="color:var(--primary);"></i> Charges Globales
+        </span>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-container" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:20px; margin-bottom:30px;">
+    <div class="kpi-card" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; border-left: 5px solid #EF4444;">
+        <div class="kpi-icon" style="background:#FEE2E2; color:#EF4444; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div>
+            <div class="kpi-label" style="color: #64748B; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Dépenses Aujourd'hui</div>
+            <div class="kpi-value" style="color: #1E293B; font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ today_expenses_total|intcomma }} FCFA</div>
+        </div>
+    </div>
+
+    <div class="kpi-card" style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; border-left: 5px solid #F59E0B;">
+        <div class="kpi-icon" style="background:#FEF3C7; color:#F59E0B; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div>
+            <div class="kpi-label" style="color: #64748B; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Ce Mois-ci</div>
+            <div class="kpi-value" style="color: #1E293B; font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ month_expenses_total|intcomma }} FCFA</div>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start;">
+    
+    <!-- Left column: Add Expense Form -->
+    <div class="card" style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <div class="card-header" style="border-bottom: 1px solid #F1F5F9; padding: 20px;">
+            <h3 style="font-size: 1.1rem; font-weight: 600; color: #1E293B; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-plus-circle" style="color:var(--primary);"></i> Enregistrer une Dépense
+            </h3>
+        </div>
+        <div class="card-body" style="padding: 20px;">
+            <form method="post" action="{% url 'sales:expense_list' %}">
+                {% csrf_token %}
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="amount" style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px;">Montant (FCFA) *</label>
+                    <div style="position: relative;">
+                        <input type="number" id="amount" name="amount" required placeholder="Ex: 5000" style="width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; font-weight: 600;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="category" style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px;">Catégorie *</label>
+                    <select id="category" name="category" style="width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem; background-color: white;">
+                        {% for cat_val, cat_lbl in categories %}
+                            <option value="{{ cat_val }}">{{ cat_lbl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label for="date" style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px;">Date (Optionnel)</label>
+                    <input type="datetime-local" id="date" name="date" style="width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="description" style="display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px;">Description / Justificatif</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Description de la dépense (ex: Achat de thé, Transport client...)" style="width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem; resize: vertical;"></textarea>
+                </div>
+
+                <button type="submit" class="btn-new-sale" style="width: 100%; padding: 12px; font-size: 0.9rem; border-radius: 8px; justify-content: center; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right column: List and Filters -->
+    <div class="card" style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <div class="card-header" style="border-bottom: 1px solid #F1F5F9; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h3 style="font-size: 1.1rem; font-weight: 600; color: #1E293B;">Historique des Dépenses</h3>
+            
+            <div style="display: flex; gap: 8px;">
+                <!-- Category Filter -->
+                <form method="get" action="{% url 'sales:expense_list' %}" style="display: flex; gap: 8px; align-items: center;">
+                    <select name="category" onchange="this.form.submit()" style="padding: 6px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.8rem; background-color: white;">
+                        <option value="">Toutes catégories</option>
+                        {% for cat_val, cat_lbl in categories %}
+                            <option value="{{ cat_val }}" {% if category_filter == cat_val %}selected{% endif %}>{{ cat_lbl }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if category_filter or date_filter %}
+                        <a href="{% url 'sales:expense_list' %}" class="btn-view" style="padding: 6px 10px; font-size: 0.8rem; border-radius: 8px;"><i class="fas fa-times"></i></a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        
+        <div class="card-body" style="padding:0;">
+            <div class="table-container">
+                <table class="data-table" id="expenseTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Catégorie</th>
+                            <th>Description</th>
+                            <th>Enregistré Par</th>
+                            <th>Montant</th>
+                            {% if request.user.is_admin_user %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>{{ expense.date|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if expense.category == 'rent' %}
+                                    <span class="badge-new" style="position:static; background:#E0F2FE; color:#0369A1;">LOYER</span>
+                                {% elif expense.category == 'transport' %}
+                                    <span class="badge-new" style="position:static; background:#F0FDF4; color:#15803D;">TRANSPORT</span>
+                                {% elif expense.category == 'salary' %}
+                                    <span class="badge-new" style="position:static; background:#FAF5FF; color:#7E22CE;">SALAIRE</span>
+                                {% elif expense.category == 'bills' %}
+                                    <span class="badge-new" style="position:static; background:#FEF9C3; color:#A16207;">FACTURES</span>
+                                {% else %}
+                                    <span class="badge-new" style="position:static; background:#F1F5F9; color:#475569;">AUTRE</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="font-weight: 500; color: #334155;">{{ expense.description|default:"-" }}</div>
+                            </td>
+                            <td style="color: #64748B; font-size: 0.85rem;">{{ expense.created_by.username }}</td>
+                            <td style="font-weight:700; color: #EF4444;">-{{ expense.amount|intcomma }} F</td>
+                            {% if request.user.is_admin_user %}
+                            <td>
+                                <form method="post" action="{% url 'sales:delete_expense' expense.pk %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette dépense ? Cette action est irréversible.');" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-view" style="padding:5px 10px; color:#EF4444; border-color:#FEE2E2; background:#FEF2F2;" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if request.user.is_admin_user %}6{% else %}5{% endif %}" class="text-center" style="padding:40px; color: #94A3B8;">Aucune dépense enregistrée.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

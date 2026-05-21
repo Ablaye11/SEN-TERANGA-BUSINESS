@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étiquette — {{ unit.product.name }} | {{ unit.imei_serial }}</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        /* ===== BOUTONS INTERFACE (masqués à l'impression) ===== */
+        .screen-only {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            align-items: center;
+            background: #1E293B;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        .screen-only h1 {
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            flex: 1;
+        }
+        .btn-print {
+            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .btn-print:hover { opacity: 0.9; }
+        .btn-back {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== PREVIEW LABEL ===== */
+        .label-preview-wrapper {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        .label-preview-wrapper h2 {
+            font-size: 0.85rem;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        /* ===== ETIQUETTE THERMIQUE (50mm x 30mm) ===== */
+        /* 1mm ≈ 3.78px at 96dpi */
+        .label {
+            width: 188px;   /* 50mm */
+            height: 113px;  /* 30mm */
+            background: white;
+            border: 1.5px solid #000;
+            padding: 5px 7px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .label-brand {
+            font-size: 7px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #000;
+        }
+        .label-condition {
+            font-size: 6px;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 2px;
+            background: #000;
+            color: white;
+            text-transform: uppercase;
+        }
+        .label-condition.neuf { background: #16a34a; }
+        .label-condition.occasion { background: #d97706; }
+        .label-condition.reconditionne { background: #0284c7; }
+
+        .label-model {
+            font-size: 9px;
+            font-weight: 900;
+            color: #000;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .label-specs {
+            font-size: 6.5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .label-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .label-price {
+            font-size: 13px;
+            font-weight: 900;
+            color: #000;
+            line-height: 1;
+        }
+        .label-currency {
+            font-size: 7px;
+            font-weight: 700;
+            color: #444;
+        }
+
+        /* SVG Barcode area */
+        .label-barcode-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .barcode-svg-wrapper svg {
+            display: block;
+        }
+        .label-imei-text {
+            font-size: 5.5px;
+            font-family: monospace;
+            color: #000;
+            letter-spacing: 0.5px;
+            margin-top: 1px;
+            text-align: center;
+        }
+
+        /* ===== FOOTER INFO ===== */
+        .label-footer {
+            font-size: 5.5px;
+            color: #555;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* ===== IMPRESSION RÉELLE ===== */
+        @media print {
+            @page {
+                size: 50mm 30mm;
+                margin: 0;
+            }
+
+            html, body {
+                width: 50mm;
+                height: 30mm;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .screen-only {
+                display: none !important;
+            }
+            .label-preview-wrapper {
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                background: white !important;
+            }
+            .label-preview-wrapper h2 {
+                display: none !important;
+            }
+            .label {
+                width: 50mm !important;
+                height: 30mm !important;
+                border: none !important;
+                padding: 1.5mm 2mm !important;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Interface (masquée à l'impression) -->
+<div class="screen-only">
+    <h1>🏷️ Étiquette Thermique — {{ unit.product.get_brand_display }} {{ unit.product.name }}</h1>
+    <a href="javascript:history.back()" class="btn-back">← Retour</a>
+    <button class="btn-print" onclick="window.print()">
+        🖨️ Imprimer (50x30mm)
+    </button>
+</div>
+
+<!-- Aperçu de l'étiquette -->
+<div class="label-preview-wrapper">
+    <h2>Aperçu de l'étiquette thermique (50 × 30 mm)</h2>
+    <div class="label" id="label">
+        <!-- En-tête : Marque + État -->
+        <div class="label-header">
+            <span class="label-brand">{{ unit.product.get_brand_display }}</span>
+            <span class="label-condition {% if unit.condition == 'neuf' %}neuf{% elif unit.condition == 'occasion' %}occasion{% else %}reconditionne{% endif %}">
+                {{ unit.get_condition_display }}
+            </span>
+        </div>
+
+        <!-- Modèle -->
+        <div class="label-model">{{ unit.product.name }}{% if unit.storage %} {{ unit.storage }}{% endif %}</div>
+
+        <!-- Spécs secondaires -->
+        <div class="label-specs">
+            {% if unit.color %}{{ unit.color }}{% endif %}
+            {% if unit.supplier %} | Fourn: {{ unit.supplier.name }}{% endif %}
+        </div>
+
+        <!-- Prix + Code-barres -->
+        <div class="label-price-row">
+            <div>
+                <div class="label-price">{{ unit.effective_selling_price|floatformat:0 }}</div>
+                <div class="label-currency">FCFA</div>
+            </div>
+            <div class="label-barcode-section">
+                <div class="barcode-svg-wrapper">
+                    <svg id="barcodesvg"></svg>
+                </div>
+                <div class="label-imei-text">{{ unit.imei_serial }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JsBarcode CDN pour générer le code-barres à partir de l'IMEI -->
+<script>
+// Génération simple du code-barres SVG sans bibliothèque externe
+// Algorithme Code128 simplifié basé sur les données ASCII
+(function() {
+    const imei = "{{ unit.imei_serial|escapejs }}";
+    const svgEl = document.getElementById('barcodesvg');
+    
+    // Paramètres du code-barres
+    const barHeight = 22;
+    const barWidth = 1;
+    const quietZone = 4;
+    
+    // Encodage simple : alternance barres/espaces basé sur les chiffres
+    // Pour un vrai code-barres EAN-13/Code128, on utiliserait une lib
+    // Ici on simule visuellement un code-barres représentatif
+    function simpleBarcode(text) {
+        // Start pattern
+        let bars = [1,1,1,0,1,0,1,1,0,1]; // START
+        
+        for (let i = 0; i < text.length; i++) {
+            const code = text.charCodeAt(i) - 32;
+            // Pattern à 6 bits basé sur la valeur ASCII
+            for (let b = 5; b >= 0; b--) {
+                bars.push((code >> b) & 1);
+                bars.push(0); // petit espace inter-barre
+            }
+            bars.push(0); // espace inter-caractère
+        }
+        
+        // Stop pattern
+        bars = bars.concat([1,1,0,1,0,1,1,1,0,1,1]);
+        return bars;
+    }
+    
+    const bars = simpleBarcode(imei);
+    const totalWidth = bars.length * barWidth + quietZone * 2;
+    
+    svgEl.setAttribute('width', Math.min(totalWidth, 110));
+    svgEl.setAttribute('height', barHeight);
+    svgEl.setAttribute('viewBox', `0 0 ${totalWidth} ${barHeight}`);
+    
+    let x = quietZone;
+    bars.forEach(function(bar) {
+        if (bar === 1) {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', 0);
+            rect.setAttribute('width', barWidth);
+            rect.setAttribute('height', barHeight);
+            rect.setAttribute('fill', '#000');
+            svgEl.appendChild(rect);
+        }
+        x += barWidth;
+    });
+})();
+</script>
+</body>
+</html>

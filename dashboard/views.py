@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import timedelta
-from sales.models import Sale, SaleItem
+from sales.models import Sale, SaleItem, Expense
 from products.models import Product, ProductUnit
 from clients.models import Client
 
@@ -35,11 +35,31 @@ def dashboard_view(request):
     month_revenue = month_sales.aggregate(total=Sum('total_amount'))['total'] or 0
     month_count = month_sales.count()
     
-    # Monthly profit (admin only)
+    # Split revenue into Neuf and Occasion
+    month_sales_items = SaleItem.objects.filter(sale__in=month_sales).select_related('product_unit')
+    month_revenue_neuf = 0
+    month_revenue_occasion = 0
+    
+    for item in month_sales_items:
+        if item.product_unit and item.product_unit.condition in ['occasion', 'reconditionne']:
+            month_revenue_occasion += item.line_total
+        else:
+            month_revenue_neuf += item.line_total
+    
+    # Monthly profit and expenses (admin only)
     month_profit = 0
+    month_expenses = 0
+    month_net_profit = 0
+    
     if request.user.is_admin_user:
+        month_expenses = Expense.objects.filter(
+            date__gte=month_start
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        
         for sale in month_sales:
             month_profit += sale.profit
+            
+        month_net_profit = month_profit - month_expenses
     
     # Stock stats
     total_in_stock = ProductUnit.objects.filter(status='in_stock').count()
@@ -110,8 +130,12 @@ def dashboard_view(request):
         'today_count': today_count,
         'week_revenue': week_revenue,
         'month_revenue': month_revenue,
+        'month_revenue_neuf': month_revenue_neuf,
+        'month_revenue_occasion': month_revenue_occasion,
         'month_count': month_count,
         'month_profit': month_profit,
+        'month_expenses': month_expenses,
+        'month_net_profit': month_net_profit,
         'total_in_stock': total_in_stock,
         'total_products': total_products,
         'low_stock': low_stock,
